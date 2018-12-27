@@ -1,0 +1,536 @@
+package com.hsk.xframe.api.utils.freeMarker;
+
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
+import org.apache.log4j.Logger;
+import com.google.gson.annotations.Expose;
+import com.hsk.supper.until.json.JsonUtil;
+
+public class WeixinUtils {
+	
+	public final static Logger logger = Logger.getLogger(WeixinUtils.class);
+
+	private static String AppId = "wxf41be36e8a5ed6b7";
+
+	private static String secret = "36926abef109c5d77d548939b0d0c192";
+	private static String jsapiTicket="";
+	private static String accessToken="";
+	private static Date createTokenDate;
+	
+	public static OAuthAccessToken getOAuthAccessToken(String code) {
+
+		OAuthAccessToken oAuthAccessToken = null;
+		// 这个url链接地址和参数皆不能变
+		String url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + AppId + "&secret=" + secret + "&code="
+				+ code + "&grant_type=authorization_code";
+		String message =HttpUtil.submitGet(url);
+		oAuthAccessToken = (OAuthAccessToken) JsonUtil.getObject4JsonString(message, OAuthAccessToken.class);
+		return oAuthAccessToken;
+	}
+
+	public static WxUserInfo getWxUserinfo(OAuthAccessToken oAuthAccessToken) {
+
+		WxUserInfo wxUserInfo = null;
+
+		String url = "https://api.weixin.qq.com/sns/userinfo?access_token=" + oAuthAccessToken.getAccess_token()
+				+ "&openid=" + oAuthAccessToken.getOpenid() + "&lang=zh_CN";
+		String message = HttpUtil.submitGet(url);
+		wxUserInfo = (WxUserInfo) JsonUtil.getObject4JsonString(message, WxUserInfo.class);
+		return wxUserInfo;
+	}
+
+	public static WxConfig getWxConfig(String url) {
+
+		// 1、获取AccessToken
+		String accessToken = getAccessToken();
+
+		// 2、获取Ticket
+		if (jsapiTicket==null || jsapiTicket.equals("")) {
+
+			jsapiTicket = getTicket(accessToken);
+		} else {
+
+			logger.info("CacheKit  jsapi_ticket is not null");
+		}
+		// 3、时间戳和随机字符串
+		String noncestr = UUID.randomUUID().toString().replace("-", "").substring(0, 16);// 随机字符串
+		String timestamp = String.valueOf(System.currentTimeMillis() / 1000);// 时间戳
+
+		// 4、获取url
+
+		// 5、将参数排序并拼接字符串
+		String str = "jsapi_ticket=" + jsapiTicket + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url="
+				+ url;
+		// 6、将字符串进行sha1加密
+		String signature = SHA1(str);
+		
+		WxConfig wxConfig = new WxConfig();
+
+		wxConfig.setAppId(AppId);
+
+		wxConfig.setNonceStr(noncestr);
+
+		wxConfig.setTimestamp(timestamp);
+
+		wxConfig.setSignature(signature);
+
+		return wxConfig;
+	}
+
+	public static String getAccessToken() {
+
+		if(createTokenDate!=null){//token 的超时时间为2个小时
+			long minutes = ((new Date()).getTime()-createTokenDate.getTime())/(1000* 60);//计算当前时间的时间差
+			if(minutes>=120){
+				createTokenDate=null;
+				accessToken="";
+				jsapiTicket="";
+			}
+		}
+		
+		if (accessToken!=null && !accessToken.equals("")) {
+			return accessToken;
+
+		} else {
+
+			String grant_type = "client_credential";// 获取access_token填写client_credential
+			// 这个url链接地址和参数皆不能变
+			String url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=" + grant_type + "&appid=" + AppId
+					+ "&secret=" + secret;
+
+			String message = HttpUtil.submitGet(url);
+
+			AccessToken accessTokenObj =  (AccessToken) JsonUtil.getObject4JsonString(message, AccessToken.class);
+
+			if (accessToken != null) {
+
+				accessToken = accessTokenObj.getAccess_token();
+				createTokenDate = new Date();
+			}
+			return accessToken;
+		}
+	}
+	
+	public static List<String> getOpenidList() {
+		
+		List<String> openidList = new ArrayList<String>();
+		
+		try {
+			Userlist userlist = getUserlist("");
+			
+			if (userlist != null && userlist.getData() != null && userlist.getData().getOpenid() != null) {
+				
+				openidList = userlist.getData().getOpenid();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		return openidList;
+	}
+
+	public static Userlist getUserlist(String nextopenid) {
+
+		Userlist userlist = null;
+
+		String access_token = getAccessToken();
+
+		String url = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + access_token + "&next_openid=" + nextopenid;// 这个url链接和参数不能变
+
+		String message = HttpUtil.submitGet(url);
+
+		userlist = (Userlist) JsonUtil.getObject4JsonString(message, Userlist.class);
+		
+		if (userlist != null) {
+			
+			String next_openid = userlist.getNext_openid();
+			
+			if (next_openid!=null && !next_openid.equals("")) {
+				
+				Userlist nextUserlist = getUserlist(next_openid);
+				
+				if (nextUserlist != null && nextUserlist.getData() != null) {
+					
+					userlist.setNext_openid(nextUserlist.getNext_openid());
+					
+					userlist.getData().getOpenid().addAll(nextUserlist.getData().getOpenid());
+					
+					getUserlist(next_openid);
+				}
+			}
+		}
+
+		return userlist;
+	}
+
+	public static WxUserInfo getUserInfo(String openid) throws Exception {
+		WxUserInfo wxUserInfo = new WxUserInfo();
+		String access_token = getAccessToken();
+
+		String url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + access_token + "&openid=" + openid
+				+ "&lang=zh_CN";// 这个url链接和参数不能变
+
+		String message =HttpUtil.submitGet(url);
+		String json = new String(message.getBytes("ISO-8859-1"),"UTF-8");
+		Map<String,Object> megMap = JsonUtil.getMap4Json(json);
+		if(megMap.get("openid")!=null)
+			wxUserInfo.setOpenid(megMap.get("openid").toString());
+		if(megMap.get("nickname")!=null)
+			wxUserInfo.setNickname(megMap.get("nickname").toString());
+		if(megMap.get("city")!=null)
+			wxUserInfo.setCity(megMap.get("city").toString());
+		if(megMap.get("country")!=null)
+			wxUserInfo.setCountry(megMap.get("country").toString());
+		if(megMap.get("province")!=null)
+			wxUserInfo.setProvince(megMap.get("province").toString());
+		if(megMap.get("sex")!=null)
+			wxUserInfo.setSex(Integer.parseInt(megMap.get("sex").toString()));
+		if(megMap.get("headimgurl")!=null)
+			wxUserInfo.setHeadimgurl(megMap.get("headimgurl").toString());
+		return wxUserInfo;
+	}
+
+	public static String getTicket(String access_token) {
+
+		String ticketStr = null;
+
+		String url = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsapi";// 这个url链接和参数不能变
+
+		String message = HttpUtil.submitGet(url);
+
+		Ticket ticket = (Ticket) JsonUtil.getObject4JsonString(message, Ticket.class);
+
+		if (ticket != null) {
+
+			ticketStr = ticket.getTicket();
+		}
+		return ticketStr;
+	}
+	
+	public static String createForeverTicket(int sceneId) {  
+		String access_token = getAccessToken();
+	    String url ="https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token="+access_token;
+	    //output data  
+	    Map<String,Integer> intMap = new HashMap<String,Integer>();  
+	    intMap.put("scene_id",sceneId);  
+	    Map<String,Map<String,Integer>> mapMap = new HashMap<String,Map<String,Integer>>();  
+	    mapMap.put("scene", intMap);  
+	    //  
+	    Map<String,Object> paramsMap = new HashMap<String,Object>();  
+	    paramsMap.put("action_name", "QR_LIMIT_SCENE");  
+	    paramsMap.put("action_info", mapMap);  
+	    String data =JsonUtil.getjsonstr(paramsMap);  
+	    String reStr =  HttpUtil.submitJsonPost(url, data).toString();
+	    Map<String,Object> reMap = JsonUtil.getMap4Json(reStr);
+	    if(reMap.containsKey("url"))
+	    	return reMap.get("url").toString();
+	    return "";  
+	} 
+	
+	public static void sendMess(String openId,String mess){
+		String access_token = getAccessToken();
+	    String url ="https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token="+access_token;
+	    //output data  
+	    Map<String,String> intMap = new HashMap<String,String>();  
+	    intMap.put("content",mess);  
+	    
+	    Map<String,Object> paramsMap = new HashMap<String,Object>();  
+	    paramsMap.put("touser", openId);  
+	    paramsMap.put("msgtype", "text");  
+	    paramsMap.put("text", intMap);
+	    String data =JsonUtil.getjsonstr(paramsMap);  
+	    String reStr =  HttpUtil.submitJsonPost(url, data).toString();
+	    System.out.println(reStr);
+	}
+	
+	public static String showQrcode(String ticket) {  
+	    String url ="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+ticket;
+	    String reStr =  HttpUtil.submitGet(url).toString();
+	    return "";  
+	}  
+
+	public static void setMessage(String message) {
+
+		String access_token = getAccessToken();
+		String url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + access_token;// 这个url链接和参数不能变
+		String returnmsg = HttpUtil.submitGet(url);
+		System.out.println("aaaaaaaaa:"+returnmsg);
+		logger.info(returnmsg);
+	}
+
+	public static String SHA1(String decript) {
+		try {
+			MessageDigest digest = java.security.MessageDigest.getInstance("SHA-1");
+			digest.update(decript.getBytes());
+			byte messageDigest[] = digest.digest();
+			// Create Hex String
+			StringBuffer hexString = new StringBuffer();
+			// 字节数组转换为 十六进制 数
+			for (int i = 0; i < messageDigest.length; i++) {
+				String shaHex = Integer.toHexString(messageDigest[i] & 0xFF);
+				if (shaHex.length() < 2) {
+					hexString.append(0);
+				}
+				hexString.append(shaHex);
+			}
+			return hexString.toString();
+
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	public static class OAuthAccessToken {
+		@Expose
+		private String access_token;
+		@Expose
+		private String openid;
+		@Expose
+		private String scope;
+		@Expose
+		private String unionid;
+
+		public String getAccess_token() {
+			return access_token;
+		}
+
+		public void setAccess_token(String access_token) {
+			this.access_token = access_token;
+		}
+
+		public String getOpenid() {
+			return openid;
+		}
+
+		public void setOpenid(String openid) {
+			this.openid = openid;
+		}
+
+		public String getScope() {
+			return scope;
+		}
+
+		public void setScope(String scope) {
+			this.scope = scope;
+		}
+
+		public String getUnionid() {
+			return unionid;
+		}
+
+		public void setUnionid(String unionid) {
+			this.unionid = unionid;
+		}
+	}
+
+	public static class WxUserInfo {
+		@Expose
+		private String openid;
+		@Expose
+		private String nickname;
+		@Expose
+		private int sex;
+		@Expose
+		private String province;
+		@Expose
+		private String city;
+		@Expose
+		private String country;
+		@Expose
+		private String headimgurl;
+
+		public String getOpenid() {
+			return openid;
+		}
+
+		public void setOpenid(String openid) {
+			this.openid = openid;
+		}
+
+		public String getNickname() {
+			return nickname;
+		}
+
+		public void setNickname(String nickname) {
+			this.nickname = nickname;
+		}
+
+		public int getSex() {
+			return sex;
+		}
+
+		public void setSex(int sex) {
+			this.sex = sex;
+		}
+
+		public String getProvince() {
+			return province;
+		}
+
+		public void setProvince(String province) {
+			this.province = province;
+		}
+
+		public String getCity() {
+			return city;
+		}
+
+		public void setCity(String city) {
+			this.city = city;
+		}
+
+		public String getCountry() {
+			return country;
+		}
+
+		public void setCountry(String country) {
+			this.country = country;
+		}
+
+		public String getHeadimgurl() {
+			return headimgurl;
+		}
+
+		public void setHeadimgurl(String headimgurl) {
+			this.headimgurl = headimgurl;
+		}
+
+	}
+
+	public static class AccessToken {
+		@Expose
+		private String access_token;
+
+		public String getAccess_token() {
+			return access_token;
+		}
+
+		public void setAccess_token(String access_token) {
+			this.access_token = access_token;
+		}
+	}
+
+	public static class Ticket {
+		@Expose
+		private String ticket;
+
+		public String getTicket() {
+			return ticket;
+		}
+
+		public void setTicket(String ticket) {
+			this.ticket = ticket;
+		}
+	}
+
+	public static class WxConfig {
+		@Expose
+		private String appId;
+		@Expose
+		private String timestamp;
+		@Expose
+		private String nonceStr;
+		@Expose
+		private String signature;
+
+		public String getAppId() {
+			return appId;
+		}
+
+		public void setAppId(String appId) {
+			this.appId = appId;
+		}
+
+		public String getTimestamp() {
+			return timestamp;
+		}
+
+		public void setTimestamp(String timestamp) {
+			this.timestamp = timestamp;
+		}
+
+		public String getNonceStr() {
+			return nonceStr;
+		}
+
+		public void setNonceStr(String nonceStr) {
+			this.nonceStr = nonceStr;
+		}
+
+		public String getSignature() {
+			return signature;
+		}
+
+		public void setSignature(String signature) {
+			this.signature = signature;
+		}
+	}
+
+	public static class Userlist {
+
+		@Expose
+		private String total;
+		@Expose
+		private String count;
+		@Expose
+		private String next_openid;
+		@Expose
+		private UserlistData data;
+
+		public String getTotal() {
+			return total;
+		}
+
+		public void setTotal(String total) {
+			this.total = total;
+		}
+
+		public String getCount() {
+			return count;
+		}
+
+		public void setCount(String count) {
+			this.count = count;
+		}
+
+		public String getNext_openid() {
+			return next_openid;
+		}
+
+		public void setNext_openid(String next_openid) {
+			this.next_openid = next_openid;
+		}
+
+		public UserlistData getData() {
+			return data;
+		}
+
+		public void setData(UserlistData data) {
+			this.data = data;
+		}
+
+	}
+
+	public static class UserlistData {
+
+		@Expose
+		private List<String> openid;
+
+		public List<String> getOpenid() {
+			return openid;
+		}
+
+		public void setOpenid(List<String> openid) {
+			this.openid = openid;
+		}
+	}
+}

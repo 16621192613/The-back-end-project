@@ -1,0 +1,86 @@
+package com.hsk.angeldoctor.api.daobbase.imp;
+
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.hsk.angeldoctor.api.daobbase.IAgAppNotificationDao;
+import com.hsk.angeldoctor.api.persistence.AgAppDevice;
+import com.hsk.angeldoctor.api.persistence.AgAppNotification;
+import com.hsk.exception.HSKDBException;
+import com.hsk.supper.dao.imp.SupperDao;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.xframe.api.utils.freeMarker.JpushClientUtil;
+
+@Component
+public class AgAppNotificationDao extends SupperDao implements IAgAppNotificationDao {
+
+	@Override
+	public AgAppNotification findAgAppNotificationById(Integer AanId) throws HSKDBException {
+		AgAppNotification  att_AgAppNotification=new AgAppNotification();				
+		if(AanId!=null){
+			att_AgAppNotification.setAanId(AanId);	
+		    Object obj=	this.getOne(att_AgAppNotification);
+			if(obj!=null){
+				att_AgAppNotification=(AgAppNotification) obj;
+			}
+		}
+		return  att_AgAppNotification;
+	}
+
+	@Override
+	public void deleteAgAppNotificationById(Integer AanId) throws HSKDBException {
+		 AgAppNotification  att_AgAppNotification=new AgAppNotification();	
+		  if(AanId!=null){
+			  			att_AgAppNotification.setAanId(AanId);
+				  	  Object obj=	this.getOne(att_AgAppNotification);
+					  if(obj!=null){
+							this.deleteObject(obj); 
+					  }
+			}
+	}
+
+	@Override
+	public Integer saveAgAppNotification(AgAppDevice att_AgAppDevice,AgAppNotification att_AgAppNotification) throws HSKDBException {
+		att_AgAppNotification.setAgentId(att_AgAppDevice.getAgentId());
+		//调用发送操作
+		JpushClientUtil.sendToRegistrationId(att_AgAppDevice.getToken(), att_AgAppNotification.getTitle(), att_AgAppNotification.getTitle(), att_AgAppNotification.getBody(), "");
+		return this.newObject(att_AgAppNotification);
+	}
+
+	@Override
+	public AgAppNotification saveOrUpdateAgAppNotification(AgAppNotification att_AgAppNotification)
+			throws HSKDBException {
+		this.getHibernateTemplate().saveOrUpdate(att_AgAppNotification);
+		  return att_AgAppNotification;
+	}
+
+	@Override
+	public List<AgAppNotification> getListByAgAppNotification(AgAppNotification att_AgAppNotification)
+			throws HSKDBException {
+		String Hql=this.getHql( att_AgAppNotification); 
+		List<AgAppNotification> list=this.getHibernateTemplate().find(Hql);
+		return  list;
+	}
+
+	@Override
+	public PagerModel getPagerModelByAgAppNotification(AgAppNotification att_AgAppNotification) throws HSKDBException {
+		String Hql=this.getHql(att_AgAppNotification);
+		return this.getHibernateDao().findByPage(Hql); 
+	}
+	
+	public String getHql(AgAppNotification att_AgAppNotification){
+		String hql ="from AgAppNotification where 1=1";
+		if(att_AgAppNotification.getAgentId()!=null)
+			hql +=" and agentId="+att_AgAppNotification.getAgentId();
+		if(att_AgAppNotification.getType()!=null && !att_AgAppNotification.getType().trim().equals(""))
+			hql +=" and type='"+att_AgAppNotification.getType().trim()+"'";
+		if(att_AgAppNotification.getTitle()!=null && !att_AgAppNotification.getTitle().trim().equals(""))
+			hql +=" and title like '%"+att_AgAppNotification.getTitle().trim()+"%'";
+		if(att_AgAppNotification.getBody()!=null && !att_AgAppNotification.getBody().trim().equals(""))
+			hql +=" and title body '%"+att_AgAppNotification.getBody().trim()+"%'";
+		hql += " order by createDate desc";
+		return hql;
+	}
+
+}

@@ -1,0 +1,98 @@
+package com.hsk.angeldoctor.web.hospital.service;
+
+import java.util.*;
+import com.hsk.angeldoctor.api.persistence.*;
+import com.hsk.angeldoctor.api.daobbase.*;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.service.IDSTService;
+import com.hsk.exception.HSKException;
+
+/**
+ * hospital业务操作接口类 
+ * @author  作者:admin
+ * @version  版本信息:v1.0   创建时间: 2018-08-14 13:27:59
+ */
+public interface IAgDoctorInfoService extends IDSTService{
+
+
+		/**
+	 * 查找AgDoctorInfo对象记录，用于弹出添加、修改窗口时候初始化数据
+	 * @param  doctorId  Integer类型(ag_doctor_info表主键)
+	  * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */	
+	public SysRetrunMessage findFormObject(Integer doctorId) throws HSKException;
+
+	
+	/**
+	 * 查找AgDoctorInfo对象记录，用于弹出添加、修改窗口时候初始化数据
+	 * @param  doctorId  Integer类型(ag_doctor_info表主键)
+	 * @return AgDoctorInfo ag_doctor_info表记录
+	 * @throws HSKException
+	 */	
+	public AgDoctorInfo findObject(Integer doctorId) throws HSKException;
+	
+	/**
+	 * 根据ag_doctor_info表主键删除AgDoctorInfo对象记录
+     * @param  doctorId  Integer类型(ag_doctor_info表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteObject(Integer doctorId) throws HSKException;
+	
+	
+	
+	/**
+	 * 根据ag_doctor_info表主键删除多条AgDoctorInfo对象记录
+     * @param  doctorIds  Integer类型(ag_doctor_info表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteAllObject(String doctorIds) throws HSKException;
+	
+	 /**
+	 * 新增或修改ag_doctor_info表记录 ,如果ag_doctor_info表主键AgDoctorInfo.doctorId为空就是添加，如果非空就是修改
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage   saveOrUpdateObject( AgDoctorInfo att_AgDoctorInfo) throws HSKException;
+	
+	/**
+	 * app修改医生信息 
+	 * @param att_AgDoctorInfo
+	 * @return
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage   saveMyDoctor( AgDoctorInfo att_AgDoctorInfo) throws HSKException;
+	
+	/**
+	 *根据AgDoctorInfo对象作为对(ag_doctor_info表进行查询，获取分页对象
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+     * @return PagerModel  分页对象
+	 * @throws HSKException 
+	 */
+	public PagerModel getPagerModelObject (AgDoctorInfo att_AgDoctorInfo,String isColl) throws HSKException;
+	/**
+	 * 查询医生列表
+	 * @param att_AgDoctorInfo
+	 * @return
+	 * @throws HSKException
+	 */
+	public List<AgDoctorInfo> getAgDoctorInfoList(AgDoctorInfo att_AgDoctorInfo) throws HSKException;
+	/**
+	 * 根据科室ID查询有排班的医生列表
+	 * @param departmentId
+	 * @return
+	 * @throws HSKException
+	 */
+	public List<AgDoctorInfo> getAgDoctorInfoListByDepId(Integer departmentId) throws HSKException;
+	/**
+	 * app根据科室ID查询有排班的医生列表
+	 * @param departmentId
+	 * @return
+	 * @throws HSKException
+	 */
+	public List<AgDoctorInfo> getAppAgDoctorInfoListByDepId(Integer departmentId,String isColl) throws HSKException;
+}

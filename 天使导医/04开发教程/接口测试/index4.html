@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link href="./css/bootstrap.min.css?v=3.4.0" rel="stylesheet">
+    	<link href="./css/font-awesome.min.css?v=4.3.0" rel="stylesheet">
+    	<link href="./css/animate.css" rel="stylesheet">
+    	<link href="./css/style.css?v=5.0.0" rel="stylesheet">
+		<link rel="stylesheet" href="./js/zTree/css/metro.css"> 
+		<script src="./js/jquery-2.1.1.min.js"></script>
+		<script src="./js/bootstrap.min.js"></script>
+		<script src="./js/zTree/jquery.popupSmallMenu.js"></script>
+		<script src="./js/zTree/jquery.ztree.all-3.5.min.js"></script>
+		<script src="./js/mxutils.js"></script>
+		<script src="./js/interface.js"></script>
+		<script src="./js/dataList.js"></script>
+		<title>接口测试</title>
+		<style>
+			.ibox-title h3 {
+			    display: inline-block;
+			    margin: 0 0 7px;
+			    padding: 0;
+			    text-overflow: ellipsis;
+			    float: left;
+			}
+			.cm_tr{
+			  padding-right: 2px;  
+	          padding-left: 0px;   
+			}
+		</style>
+	</head>
+	<body class="gray-bg">
+		
+<form onsubmit="return save()">
+    <input name="petList[0].petName" value="佩奇"/>
+    <input name="petList[0].petType" value="猪"/>
+    <input name="petList[1].petName" value="阿喵"/>
+    <input name="petList[1].petType" value="猫"/>
+    <input type="submit" value="提交"/>
+</form>
+	</body> 
+</html>
+<script type="text/javascript">
+
+
+function save(){
+	$.ajax({
+			  type: 'POST',
+			  url: "http://localhost:8080/angeldoctor/testList.htm",
+			  data:"",
+			  success: function(data) {
+		          $("#resultText").val(formatJson(data));
+		        }  
+		});
+}
+
+
+</script>

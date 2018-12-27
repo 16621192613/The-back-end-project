@@ -1,0 +1,13 @@
+# version : $Id: jdbc.properties 5788 2009-02-02 02:09:53Z quansun $
+## mysql
+jdbc.driverClassName=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://47.106.229.76:3306/angeldoctor?characterEncoding=UTF-8
+jdbc.username=root
+jdbc.password=ag123456
+hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
+hibernate.show_sql=true
+hibernate.format_sql=false
+Long_Level=info;debug;error;warn;fatal
+H_S_K_paramType=H_S_K_paramType
+class.path=com.cn.websupper.app
+DB_Type=mysql

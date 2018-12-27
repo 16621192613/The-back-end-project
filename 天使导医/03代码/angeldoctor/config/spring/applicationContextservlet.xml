@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+ 
+     
+    <mvc:annotation-driven/> 
+	<bean id="jacksonMessageConverter"
+		class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
+	<!-- 启动Spring MVC的注解功能，完成请求和注解POJO的映射 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"> 
+		<property name="messageConverters">
+			<list>
+				<ref bean="jacksonMessageConverter" />
+			</list>
+		</property>
+	</bean> 
+    <context:component-scan base-package="com.shi.springmvc"></context:component-scan>
+    
+   	<context:annotation-config/> 
+   	<!-- 
+ <mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="objectMapper">
+					<bean class="com.fasterxml.jackson.databind.ObjectMapper">
+						<property name="dateFormat">
+							<bean class="java.text.SimpleDateFormat">
+								<constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss" />
+							</bean>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</mvc:message-converters>
+ </mvc:annotation-driven>
+  -->
+   
+   	  <context:component-scan base-package="com.hsk.supper" />
+   	  <context:component-scan base-package="com.hsk.angeldoctor.api.controller" />
+	  <context:component-scan base-package="com.hsk.xframe" />
+	  <context:component-scan base-package="com.hsk.angeldoctor" />
+  	  <!--  声明式容器事务管理 ,transaction-manager指定事务管理器为transactionManager -->
+   <tx:annotation-driven
+		transaction-manager="transactionhibernateManager" proxy-target-class="true" />  
+		
+
+    <tx:advice id="txAdvice" transaction-manager="transactionhibernateManager">
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="get*" propagation="REQUIRED" />
+            <tx:method name="save*" rollback-for="HSKException"/>
+            <tx:method name="update*" rollback-for="HSKException"/>
+            <tx:method name="del*" rollback-for="HSKException"/>
+            <tx:method name="copy*" rollback-for="HSKException"/>
+            <tx:method name="delete*" rollback-for="HSKException"/>
+             <tx:method name="do*" rollback-for="HSKException"/>
+             <tx:method name="Create*" rollback-for="HSKException"/>
+             <tx:method name="create*" rollback-for="HSKException"/>
+              <tx:method name="new*" rollback-for="HSKException"/>
+            <tx:method name="*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+    
+    <aop:config>
+    	<aop:pointcut id="txPointcut" expression="execution(* com.hsk..*Service*.*(..))" />
+        <aop:advisor pointcut-ref="txPointcut" advice-ref="txAdvice"/>
+    </aop:config>
+    
+    
+    
+    <tx:annotation-driven
+		transaction-manager="transactionjdbcManager" proxy-target-class="true" />  
+		
+
+    <tx:advice id="txjdbcAdvice" transaction-manager="transactionjdbcManager">
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="get*" propagation="REQUIRED" />
+            <tx:method name="save*" rollback-for="HSKException"/>
+            <tx:method name="update*" rollback-for="HSKException"/>
+            <tx:method name="del*" rollback-for="HSKException"/>
+            <tx:method name="copy*" rollback-for="HSKException"/>
+            <tx:method name="delete*" rollback-for="HSKException"/>
+            <tx:method name="do*" rollback-for="HSKException"/>
+                <tx:method name="Create*" rollback-for="HSKException"/>
+             <tx:method name="create*" rollback-for="HSKException"/>
+              <tx:method name="new*" rollback-for="HSKException"/>
+            <tx:method name="*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+    
+    <aop:config>
+    	<aop:pointcut id="txjdbcPointcut" expression="execution(* com.hsk..*Service*.*(..))" />
+        <aop:advisor pointcut-ref="txjdbcPointcut" advice-ref="txjdbcAdvice"/>
+    </aop:config>
+   	  
+   	  
+</beans>

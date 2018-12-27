@@ -1,0 +1,59 @@
+--------------------------------------------
+创建预约订单视图
+--------------------------------------------
+CREATE VIEW ag_order_view AS
+SELECT a.*,a.aoi_id AS id,b.name AS organization_name,c.name AS department_name,d.name AS doctor_name,d.expert,
+CONCAT(e.start_h,":",e.start_m,"-",e.end_h,":",e.end_m) AS shift_period,f.treatment_fee,f.drug_fee,
+CASE WHEN a.register_type=0 THEN h.name WHEN a.register_type=1 THEN g.name END AS agent_name,
+CASE WHEN a.register_type=0 THEN h.mobile WHEN a.register_type=1 THEN g.mobile END AS agent_mobile,
+i.name AS first_agent_name,i.mobile AS first_agent_mobile,j.name AS second_agent_name,j.mobile AS second_agent_mobile,
+b.patient_share_percent,b.primary_salesman_share_percent,b.secondary_salesman_share_percent,b.platform_share_percent,b.organization_share_percent 
+FROM ag_order_info a  
+LEFT JOIN ag_hospital_info b ON a.organization_id=b.organization_id 
+LEFT JOIN ag_department_info c ON a.department_id=c.department_id 
+LEFT JOIN ag_doctor_info d ON a.doctor_id= d.doctor_id 
+LEFT JOIN ag_work_time e ON a.shift_period_id=e.shift_period_id 
+LEFT JOIN ag_deal_info f ON f.aoi_id=a.aoi_id 
+LEFT JOIN ag_patient_info g ON g.patient_id=a.agent_id 
+LEFT JOIN ag_business_user h ON h.agent_id=a.agent_id 
+LEFT JOIN ag_business_user i ON a.first_agent_id=i.agent_id 
+LEFT JOIN ag_business_user j ON a.first_agent_id=j.agent_id 
+ORDER BY a.create_date DESC
+--------------------------------------------
+创建就诊信息视图
+--------------------------------------------
+CREATE VIEW ag_deal_view AS
+SELECT a.aoi_id AS registration_id,a.agent_id,a.organization_id,a.patient_id,a.register_type,a.department_id AS reg_department_id,
+a.doctor_id AS reg_doctor_id,a.register_date,a.shift_period_id,a.register_status,a.outpatient_status,b.name AS organization_name,
+a.patient_name,c.name AS reg_department_name,d.name AS reg_doctor_name,f.drug_fee,f.treatment_fee,
+i.ami_id AS share_patient_id,i.ami_id AS agent_feedback_id,i.share_patient_amount,
+CASE WHEN a.register_type=0 AND a.agent_id=i.share_first_agent_id THEN i.share_first_agent_amount
+WHEN a.register_type=0 AND a.agent_id=i.share_second_agent_id THEN i.share_second_agent_amount ELSE 0 END AS agent_share,
+CONCAT(e.start_h,":",e.start_m,"-",e.end_h,":",e.end_m) AS shift_period,k.aei_id AS patient_evaluation_id,j.afbi_id AS patient_feedback_id,
+f.department_id AS actual_department_id,l.name AS actual_department_name,f.doctor_id AS actual_doctor_id,m.name AS actual_doctor_name 
+FROM ag_order_info a  
+LEFT JOIN ag_hospital_info b ON a.organization_id=b.organization_id 
+LEFT JOIN ag_department_info c ON a.department_id=c.department_id 
+LEFT JOIN ag_doctor_info d ON a.doctor_id= d.doctor_id 
+LEFT JOIN ag_work_time e ON a.shift_period_id=e.shift_period_id 
+LEFT JOIN ag_deal_info f ON f.aoi_id=a.aoi_id 
+LEFT JOIN ag_patient_info g ON g.patient_id=a.agent_id 
+LEFT JOIN ag_business_user h ON h.agent_id=a.agent_id 
+LEFT JOIN ag_maid_info i ON i.adi_id=f.adi_id 
+LEFT JOIN ag_feedback_info j ON j.medical_record_id=a.aoi_id
+LEFT JOIN ag_evaluate_info k ON k.medical_record_id=a.aoi_id
+LEFT JOIN ag_department_info l ON l.department_id=f.department_id 
+LEFT JOIN ag_doctor_info m ON m.doctor_id= f.doctor_id
+ORDER BY a.create_date DESC
+--------------------------------------------
+排班信息视图
+--------------------------------------------
+CREATE VIEW ag_work_view AS  
+SELECT a.*,a.shift_plan_id AS id,b.name AS organizationName,c.name AS departmentName,d.name AS doctorName,CONCAT(e.start_h,":",e.start_m,"-",e.end_h,":",e.end_m) AS shift_period 
+FROM ag_work_info a,ag_hospital_info b,ag_department_info c,ag_doctor_info d,ag_work_time e 
+WHERE a.organization_id = b.organization_id AND a.department_id=c.department_id AND a.doctor_id=d.doctor_id AND e.shift_period_id =a.shift_period_id 
+
+
+
+
+select agwechatin0_.wechat_user_id as wechat1_202_, agwechatin0_.avatar as avatar202_, agwechatin0_.avatar_media_id as avatar3_202_, agwechatin0_.create_date as create4_202_, agwechatin0_.open_id as open5_202_, agwechatin0_.scene_id as scene6_202_, agwechatin0_.status as status202_, agwechatin0_.wechat_name as wechat8_202_, (SELECT a.patient_id FROM ag_patient_info a WHERE a.wechat_user_id=agwechatin0_.wechat_user_id) as formula98_ from ag_wechat_info agwechatin0_ where 1=1 and agwechatin0_.scene_id=741

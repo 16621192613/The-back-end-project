@@ -1,0 +1,452 @@
+package com.hsk.angeldoctor.api.persistence;
+
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Formula;
+
+@Entity
+@Table(name = "ag_deal_view")
+public class AgDealView {
+	
+	private Integer registrationId;
+	private Integer organizationId;
+	private Integer patientId;
+	private Integer agentId;
+	private String registerType;
+	private Integer regDepartmentId;
+	private Integer regDoctorId;
+	private Date registerDate;
+	private Integer shiftPeriodId;
+	private String registerStatus;
+	private String outpatientStatus;
+	private String organizationName;
+	private String patientName;
+	private String patientMobile;
+	private String patientGender;
+	private String patientAge;
+	private String regDepartmentName;
+	private String regDoctorName;
+	private Double drugFee;
+	private Double treatmentFee;
+	private Integer sharePatientId;
+	private Integer agentFeedbackId;
+	private Double sharePatientAmount;
+	private Double agentShare;
+	private String shiftPeriod;
+	private Integer patientEvaluationId;
+	private Integer patientFeedbackId;
+	private Integer actualDepartmentId;
+	private String actualDepartmentName;
+	private Integer actualDoctorId;
+	private String actualDoctorName;
+
+	// Constructors
+
+	/** default constructor */
+	public AgDealView() {
+	}
+
+	/** minimal constructor */
+	public AgDealView(Integer registrationId) {
+		this.registrationId = registrationId;
+	}
+
+	/** full constructor */
+	public AgDealView(Integer registrationId, Integer organizationId, Integer patientId, String registerType,
+			Integer regDepartmentId, Integer regDoctorId, Date registerDate, Integer shiftPeriodId,
+			String registerStatus, String outpatientStatus, String organizationName, String patientName,
+			String regDepartmentName, String regDoctorName, Double drugFee, Double treatmentFee, Integer sharePatientId,
+			Integer agentFeedbackId, Double sharePatientAmount, Double agentShare, String shiftPeriod,
+			Integer patientEvaluationId, Integer patientFeedbackId, Integer actualDepartmentId,
+			String actualDepartmentName, Integer actualDoctorId, String actualDoctorName) {
+		this.registrationId = registrationId;
+		this.organizationId = organizationId;
+		this.patientId = patientId;
+		this.registerType = registerType;
+		this.regDepartmentId = regDepartmentId;
+		this.regDoctorId = regDoctorId;
+		this.registerDate = registerDate;
+		this.shiftPeriodId = shiftPeriodId;
+		this.registerStatus = registerStatus;
+		this.outpatientStatus = outpatientStatus;
+		this.organizationName = organizationName;
+		this.patientName = patientName;
+		this.regDepartmentName = regDepartmentName;
+		this.regDoctorName = regDoctorName;
+		this.drugFee = drugFee;
+		this.treatmentFee = treatmentFee;
+		this.sharePatientId = sharePatientId;
+		this.agentFeedbackId = agentFeedbackId;
+		this.sharePatientAmount = sharePatientAmount;
+		this.agentShare = agentShare;
+		this.shiftPeriod = shiftPeriod;
+		this.patientEvaluationId = patientEvaluationId;
+		this.patientFeedbackId = patientFeedbackId;
+		this.actualDepartmentId = actualDepartmentId;
+		this.actualDepartmentName = actualDepartmentName;
+		this.actualDoctorId = actualDoctorId;
+		this.actualDoctorName = actualDoctorName;
+	}
+
+	// Property accessors
+	@Id
+	@Column(name = "registration_id", nullable = false)
+
+	public Integer getRegistrationId() {
+		return this.registrationId;
+	}
+
+	public void setRegistrationId(Integer registrationId) {
+		this.registrationId = registrationId;
+	}
+
+	@Column(name = "organization_id")
+
+	public Integer getOrganizationId() {
+		return this.organizationId;
+	}
+
+	public void setOrganizationId(Integer organizationId) {
+		this.organizationId = organizationId;
+	}
+
+	@Column(name = "patient_id")
+
+	public Integer getPatientId() {
+		return this.patientId;
+	}
+
+	public void setPatientId(Integer patientId) {
+		this.patientId = patientId;
+	}
+	
+	@Column(name = "agent_id")
+	public Integer getAgentId() {
+		return agentId;
+	}
+
+	public void setAgentId(Integer agentId) {
+		this.agentId = agentId;
+	}
+
+	@Column(name = "register_type", length = 32)
+
+	public String getRegisterType() {
+		return this.registerType;
+	}
+
+	public void setRegisterType(String registerType) {
+		this.registerType = registerType;
+	}
+
+	@Column(name = "reg_department_id")
+
+	public Integer getRegDepartmentId() {
+		return this.regDepartmentId;
+	}
+
+	public void setRegDepartmentId(Integer regDepartmentId) {
+		this.regDepartmentId = regDepartmentId;
+	}
+
+	@Column(name = "reg_doctor_id")
+
+	public Integer getRegDoctorId() {
+		return this.regDoctorId;
+	}
+
+	public void setRegDoctorId(Integer regDoctorId) {
+		this.regDoctorId = regDoctorId;
+	}
+	@Temporal(TemporalType.DATE)
+	@Column(name = "register_date" )
+
+	public Date getRegisterDate() {
+		return this.registerDate;
+	}
+
+	public void setRegisterDate(Date registerDate) {
+		this.registerDate = registerDate;
+	}
+
+	@Column(name = "shift_period_id")
+
+	public Integer getShiftPeriodId() {
+		return this.shiftPeriodId;
+	}
+
+	public void setShiftPeriodId(Integer shiftPeriodId) {
+		this.shiftPeriodId = shiftPeriodId;
+	}
+
+	@Column(name = "register_status", length = 32)
+
+	public String getRegisterStatus() {
+		return this.registerStatus;
+	}
+
+	public void setRegisterStatus(String registerStatus) {
+		this.registerStatus = registerStatus;
+	}
+
+	@Column(name = "outpatient_status", length = 32)
+
+	public String getOutpatientStatus() {
+		return this.outpatientStatus;
+	}
+
+	public void setOutpatientStatus(String outpatientStatus) {
+		this.outpatientStatus = outpatientStatus;
+	}
+
+	@Column(name = "organization_name", length = 100)
+
+	public String getOrganizationName() {
+		return this.organizationName;
+	}
+
+	public void setOrganizationName(String organizationName) {
+		this.organizationName = organizationName;
+	}
+
+	@Column(name = "patient_name", length = 100)
+
+	public String getPatientName() {
+		return this.patientName;
+	}
+
+	public void setPatientName(String patientName) {
+		this.patientName = patientName;
+	}
+
+	@Column(name = "reg_department_name", length = 100)
+
+	public String getRegDepartmentName() {
+		return this.regDepartmentName;
+	}
+
+	public void setRegDepartmentName(String regDepartmentName) {
+		this.regDepartmentName = regDepartmentName;
+	}
+
+	@Column(name = "reg_doctor_name", length = 100)
+
+	public String getRegDoctorName() {
+		return this.regDoctorName;
+	}
+
+	public void setRegDoctorName(String regDoctorName) {
+		this.regDoctorName = regDoctorName;
+	}
+
+	@Column(name = "drug_fee", precision = 16)
+
+	public Double getDrugFee() {
+		return this.drugFee;
+	}
+
+	public void setDrugFee(Double drugFee) {
+		this.drugFee = drugFee;
+	}
+
+	@Column(name = "treatment_fee", precision = 16)
+
+	public Double getTreatmentFee() {
+		return this.treatmentFee;
+	}
+
+	public void setTreatmentFee(Double treatmentFee) {
+		this.treatmentFee = treatmentFee;
+	}
+
+	@Column(name = "share_patient_id")
+
+	public Integer getSharePatientId() {
+		return this.sharePatientId;
+	}
+
+	public void setSharePatientId(Integer sharePatientId) {
+		this.sharePatientId = sharePatientId;
+	}
+
+	@Column(name = "agent_feedback_id")
+
+	public Integer getAgentFeedbackId() {
+		return this.agentFeedbackId;
+	}
+
+	public void setAgentFeedbackId(Integer agentFeedbackId) {
+		this.agentFeedbackId = agentFeedbackId;
+	}
+
+	@Column(name = "share_patient_amount", precision = 16)
+
+	public Double getSharePatientAmount() {
+		return this.sharePatientAmount;
+	}
+
+	public void setSharePatientAmount(Double sharePatientAmount) {
+		this.sharePatientAmount = sharePatientAmount;
+	}
+
+	@Column(name = "agent_share", precision = 16)
+
+	public Double getAgentShare() {
+		return this.agentShare;
+	}
+
+	public void setAgentShare(Double agentShare) {
+		this.agentShare = agentShare;
+	}
+
+	@Column(name = "shift_period", length = 131)
+
+	public String getShiftPeriod() {
+		return this.shiftPeriod;
+	}
+
+	public void setShiftPeriod(String shiftPeriod) {
+		this.shiftPeriod = shiftPeriod;
+	}
+
+	@Column(name = "patient_evaluation_id")
+
+	public Integer getPatientEvaluationId() {
+		return this.patientEvaluationId;
+	}
+
+	public void setPatientEvaluationId(Integer patientEvaluationId) {
+		this.patientEvaluationId = patientEvaluationId;
+	}
+
+	@Column(name = "patient_feedback_id")
+
+	public Integer getPatientFeedbackId() {
+		return this.patientFeedbackId;
+	}
+
+	public void setPatientFeedbackId(Integer patientFeedbackId) {
+		this.patientFeedbackId = patientFeedbackId;
+	}
+
+	@Column(name = "actual_department_id")
+
+	public Integer getActualDepartmentId() {
+		return this.actualDepartmentId;
+	}
+
+	public void setActualDepartmentId(Integer actualDepartmentId) {
+		this.actualDepartmentId = actualDepartmentId;
+	}
+
+	@Column(name = "actual_department_name", length = 100)
+
+	public String getActualDepartmentName() {
+		return this.actualDepartmentName;
+	}
+
+	public void setActualDepartmentName(String actualDepartmentName) {
+		this.actualDepartmentName = actualDepartmentName;
+	}
+
+	@Column(name = "actual_doctor_id")
+
+	public Integer getActualDoctorId() {
+		return this.actualDoctorId;
+	}
+
+	public void setActualDoctorId(Integer actualDoctorId) {
+		this.actualDoctorId = actualDoctorId;
+	}
+
+	@Column(name = "actual_doctor_name", length = 100)
+
+	public String getActualDoctorName() {
+		return this.actualDoctorName;
+	}
+
+	public void setActualDoctorName(String actualDoctorName) {
+		this.actualDoctorName = actualDoctorName;
+	}
+	
+	@Column(name = "patient_mobile")
+	public String getPatientMobile() {
+		return patientMobile;
+	}
+
+	public void setPatientMobile(String patientMobile) {
+		this.patientMobile = patientMobile;
+	}
+	@Column(name = "patient_gender")
+	public String getPatientGender() {
+		return patientGender;
+	}
+
+	public void setPatientGender(String patientGender) {
+		this.patientGender = patientGender;
+	}
+	@Column(name = "patient_age")
+	public String getPatientAge() {
+		return patientAge;
+	}
+
+	public void setPatientAge(String patientAge) {
+		this.patientAge = patientAge;
+	}
+	private String previousRegistration;
+	
+	@Transient
+	public String getPreviousRegistration() {
+		if(this.registerType!=null && this.registerType.equals("3")){
+			previousRegistration="1";
+		}else
+			previousRegistration="0";
+		return previousRegistration;
+	}
+	
+	private Integer accumulatePointValue;
+	private Double patientShare;
+	private Integer patentFeedBackId;
+	
+	@Formula("(SELECT a.afbi_id FROM ag_feedback_info a WHERE a.medical_record_id= registration_id)")
+	public Integer getPatentFeedBackId() {
+		return patentFeedBackId;
+	}
+
+	public void setPatentFeedBackId(Integer patentFeedBackId) {
+		this.patentFeedBackId = patentFeedBackId;
+	}
+
+	@Formula("(SELECT a.count FROM ag_integral_info a WHERE a.app_id= registration_id and a.source='2')")
+	public Integer getAccumulatePointValue() {
+		if(accumulatePointValue!=null)
+			return accumulatePointValue;
+		else
+			return 0;
+	}
+	
+	public void setAccumulatePointValue(Integer accumulatePointValue) {
+		this.accumulatePointValue = accumulatePointValue;
+	}
+
+	public void setPreviousRegistration(String previousRegistration) {
+		this.previousRegistration = previousRegistration;
+	}
+	@Formula("(SELECT a.share_patient_amount FROM ag_maid_info a WHERE a.aoi_id= registration_id)")
+	public Double getPatientShare() {
+		return patientShare;
+	}
+
+	public void setPatientShare(Double patientShare) {
+		this.patientShare = patientShare;
+	}
+}

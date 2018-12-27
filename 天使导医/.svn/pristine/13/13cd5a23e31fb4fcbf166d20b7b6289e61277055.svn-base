@@ -1,0 +1,731 @@
+package com.hsk.xframe.web.sysUser.service.impl;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.providers.encoding.Md5PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.hsk.exception.HSKDBException;
+import com.hsk.exception.HSKException;
+import com.hsk.supper.dto.SystemContext;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.daobbase.ISysRoleInfoDao;
+import com.hsk.xframe.api.daobbase.ISysUserInfoDao;
+import com.hsk.xframe.api.persistence.SysFileInfo;
+import com.hsk.xframe.api.persistence.SysGxControlUser;
+import com.hsk.xframe.api.persistence.SysGxRoleControl;
+import com.hsk.xframe.api.persistence.SysGxRoleMenu;
+import com.hsk.xframe.api.persistence.SysGxRoleUser;
+import com.hsk.xframe.api.persistence.SysGxUserMenu;
+import com.hsk.xframe.api.persistence.SysOrgGx;
+import com.hsk.xframe.api.persistence.SysUserInfo;
+import com.hsk.xframe.api.service.imp.DSTService;
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+import com.hsk.xframe.api.utils.freeMarker.CreateCodeUtil;
+import com.hsk.xframe.api.utils.freeMarker.ImageBase64Util;
+import com.hsk.xframe.api.utils.freeMarker.RandomCodeUtils;
+import com.hsk.xframe.web.sysUser.service.ISysUserService;
+
+@Service
+public class SysUserService extends DSTService implements ISysUserService {
+	@Autowired
+	private ISysUserInfoDao sysUserInfoDao;
+	@Autowired
+	private ISysRoleInfoDao sysRoleInfoDao;
+	
+	
+	public PagerModel getSysUserPager(SysUserInfo sysUserInfo)
+			throws HSKException { 
+		PagerModel model = new PagerModel();
+		try { 
+			
+			model = sysUserInfoDao.getSysUserInfoPage(sysUserInfo);
+			List<SysUserInfo> userList = model.getRows();
+			if(userList !=null && userList.size() >0){
+				List<Map<String,Object>> reList = new ArrayList<Map<String,Object>>();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				for(SysUserInfo user: userList){
+					Map<String,Object> map = new HashMap<String,Object>();
+					map.put("id", user.getSuiId());
+					map.put("name", user.getAccount());
+					map.put("actualName", user.getUserName());
+					map.put("portalRoleId", user.getUserRole());
+					map.put("roleName", user.getRoleName());
+					map.put("roleIsAdmin",user.getIsAdmin());
+					map.put("createDate", sdf.format(user.getCreateDate()));
+					reList.add(map);
+				}
+				model.setRows(reList);
+				model.setItems(null);
+			}
+		} catch (HSKDBException e) {
+			e.printStackTrace();
+		}
+		return model;
+	}
+
+	@Override
+	public SysRetrunMessage saveSysUser(SysUserInfo sysUserInfo)
+			throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try {
+	  		if(sysUserInfo.getSuiId()==null){
+	  			SysUserInfo checkUser = new SysUserInfo();
+		  		checkUser.setState(0);
+		  		checkUser.setAccount(sysUserInfo.getAccount());
+		  		checkUser.setUserType(1);
+		  		checkUser = sysUserInfoDao.getSysUserInfoByObj(checkUser);
+		  		if(checkUser !=null && checkUser.getSuiId()!=null){
+		  			srm.setCode(0l);
+		  			srm.setMeg("该账号已存在!");
+		  			return srm;
+		  		}else{
+		  			sysUserInfo.setUserType(1);
+		  			sysUserInfo.setState(0);
+		  			this.newObject(sysUserInfo);
+		  		}
+	  		}else
+	  			this.updateObject(sysUserInfo);
+	  		
+		} catch (Exception e) {
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+			throw new  HSKException(e);
+		}
+		return srm;
+	}
+
+	public SysRetrunMessage updateSysUserState(Integer suiId, Integer state)
+			throws HSKException {
+		
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			SysUserInfo sysUserInfo = new SysUserInfo(suiId);
+			sysUserInfo = (SysUserInfo) this.getOne(sysUserInfo);
+			sysUserInfo.setState(state);
+			this.updateObject(sysUserInfo);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage delSysUser(Integer suiId) throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			SysUserInfo sysUserInfo = new SysUserInfo(suiId);
+			sysUserInfo = (SysUserInfo) this.getOne(sysUserInfo);
+			sysUserInfo.setState(1);
+			this.updateObject(sysUserInfo);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+	
+	@Override
+	public Map<String,Object> findSysUser(Integer suiId) throws HSKException {
+		Map<String,Object> reMap = new HashMap<String,Object>();
+		SysUserInfo sysUserInfo = new SysUserInfo(suiId);
+		sysUserInfo = (SysUserInfo) this.getOne(sysUserInfo);
+		reMap.put("id", sysUserInfo.getSuiId());
+		reMap.put("name", sysUserInfo.getAccount());
+		reMap.put("actualName", sysUserInfo.getUserName());
+		reMap.put("portalRoleId", sysUserInfo.getUserRole());
+		reMap.put("roleName", sysUserInfo.getRoleName());
+		if(sysUserInfo.getUserRole().equals("1"))
+			reMap.put("roleIsAdmin", 1);
+		else
+			reMap.put("roleIsAdmin", 0);
+		return reMap;
+	}
+
+	@Override
+	public SysRetrunMessage checkSysUser(SysUserInfo sysUserInfo)
+			throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			SysUserInfo checkUser = sysUserInfoDao.getSysUserInfoByName(sysUserInfo);
+			if(checkUser != null && (sysUserInfo.getSuiId() == null || !checkUser.getSuiId().equals(sysUserInfo.getSuiId())))
+				srm.setCode(2l);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return srm;
+	}
+	
+	@Override
+	public SysRetrunMessage updateSysUserPass(Integer suiId)
+			throws HSKException {
+		
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			SysUserInfo sysUserInfo = new SysUserInfo(suiId);
+			sysUserInfo = (SysUserInfo) this.getOne(sysUserInfo);
+			sysUserInfo.setPassword("123456");
+			this.updateObject(sysUserInfo);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage updateLoginUserPass(String newPwd)
+			throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		SysUserInfo sysUserInfo = this.GetOneSessionAccount();
+		Md5PasswordEncoder md5= new Md5PasswordEncoder();
+		sysUserInfo.setPassword(md5.encodePassword(newPwd, null));
+		try {
+			this.updateObject(sysUserInfo);
+			this.SetSessionAccount(sysUserInfo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败！");
+		}
+		return srm;
+	}
+	
+	@Override
+	public SysRetrunMessage getSysUserList(SysUserInfo sysUserInfo)
+			throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			List<SysUserInfo> list = this.getList(sysUserInfo);
+			srm.setObj(list);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("查询失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage getUserRole(Integer suiId) throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			SysGxRoleUser sysGxRoleUser = new SysGxRoleUser();
+			sysGxRoleUser.setSuiId(suiId);
+			List<SysGxRoleUser> list = this.getList(sysGxRoleUser);
+			srm.setObj(list);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage getUserMenu(Integer suiId) throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			SysGxUserMenu sysGxUserMenu = new SysGxUserMenu();
+			sysGxUserMenu.setSuiId(suiId);
+			List<SysGxUserMenu> list = this.getList(sysGxUserMenu);
+			srm.setObj(list);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage getUserControl(Integer suiId, Integer smenuId)
+			throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			List<Map<String,Object>> list = sysUserInfoDao.getSysUserControlList(suiId, smenuId);
+			srm.setObj(list);
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage saveUserRole(Integer suiId, String sroleIds)throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			//查看该用户原来的角色
+			SysGxRoleUser sysGxRoleUser = new SysGxRoleUser();
+			sysGxRoleUser.setSuiId(suiId);
+			List<SysGxRoleUser> oldRoleList = this.getList(sysGxRoleUser);
+			String newRoleIds ="";
+			String delRoleIds="";
+			List<Integer> newRoleIdArray= new ArrayList<Integer>();
+			if(sroleIds != null && !sroleIds.trim().equals("")){
+				String[] sroleIdArray = sroleIds.split(",");
+				//查看新增的岗位
+				for(String sroleIdStr : sroleIdArray){
+					Integer sroleId = Integer.parseInt(sroleIdStr);
+					boolean isFind=false;
+					if(oldRoleList != null && oldRoleList.size() > 0){
+						for(SysGxRoleUser oldRole : oldRoleList){
+							if(sroleId.equals(oldRole.getSroleId())){
+								isFind=true;
+								break;
+							}
+						}
+					}
+					if(!isFind){
+						newRoleIds+=sroleId+",";
+						newRoleIdArray.add(sroleId);
+					}
+				}
+				//查看删除岗位
+				if(oldRoleList != null && oldRoleList.size() > 0){
+					for(SysGxRoleUser oldRole : oldRoleList){
+						boolean isFind=false;
+						for(String sroleIdStr : sroleIdArray){
+							Integer sroleId = Integer.parseInt(sroleIdStr);
+							if(sroleId.equals(oldRole.getSroleId())){
+								isFind=true;
+								break;
+							}
+						}
+						if(!isFind)
+							delRoleIds+=oldRole.getSroleId()+",";
+					}
+				}
+			}else{//删除所有岗位
+				if(oldRoleList != null && oldRoleList.size() > 0){
+					for(SysGxRoleUser oldRole : oldRoleList)
+						delRoleIds+=oldRole.getSroleId()+",";
+				}
+			}
+			//新增用户岗位信息
+			if(newRoleIds != null && !newRoleIds.trim().equals("")){
+				//保存用户改为信息
+				for(Integer roleId : newRoleIdArray){
+					SysGxRoleUser roleUser = new SysGxRoleUser();
+					roleUser.setSroleId(roleId);
+					roleUser.setSuiId(suiId);
+					this.newObject(roleUser);
+				}
+				newRoleIds =newRoleIds.substring(0, newRoleIds.length()-1);
+				//保存用户菜单信息
+				List<SysGxRoleMenu> sysGxRoleMenuList = sysRoleInfoDao.getSysGxRoleMenuBySroleIds(newRoleIds);
+				if(sysGxRoleMenuList != null && sysGxRoleMenuList.size() >0){
+					for(SysGxRoleMenu sysGxRoleMenu : sysGxRoleMenuList){
+						SysGxUserMenu sysGxUserMenu = new SysGxUserMenu();
+						sysGxUserMenu.setSuiId(suiId);
+						sysGxUserMenu.setSroleId(sysGxRoleMenu.getSroleId());
+						sysGxUserMenu.setSmenuId(sysGxRoleMenu.getSmenuId());
+						sysGxUserMenu.setType(1);
+						this.newObject(sysGxUserMenu);
+					}
+				}
+				//保存用户岗位信息
+				List<SysGxRoleControl> sysGxRoleControlList = sysRoleInfoDao.getSysGxRoleControlBySroleIds(newRoleIds);
+				if(sysGxRoleControlList != null && sysGxRoleControlList.size() >0){
+					for(SysGxRoleControl sysGxRoleControl : sysGxRoleControlList){
+						SysGxControlUser sysGxControlUser = new SysGxControlUser();
+						sysGxControlUser.setSuiId(suiId);
+						sysGxControlUser.setSroleId(sysGxRoleControl.getSroleId());
+						sysGxControlUser.setSconId(sysGxRoleControl.getSconId());
+						sysGxControlUser.setIfOperate(sysGxRoleControl.getIfOperate());
+						sysGxControlUser.setPropertiesSet(sysGxRoleControl.getPropertiesSet());
+						sysGxControlUser.setType(1);
+						this.newObject(sysGxControlUser);
+					}
+				}
+				//保存用户物料信息
+				//保存用户库区信息
+			}
+			//删除原有的岗位信息
+			if(delRoleIds != null && !delRoleIds.trim().equals("")){
+				delRoleIds =delRoleIds.substring(0, delRoleIds.length()-1);
+				sysUserInfoDao.delUserRoleByUsertAndRoles(suiId, delRoleIds);
+				sysUserInfoDao.delUserMenus(suiId, null, null, delRoleIds);
+				sysUserInfoDao.delUserControls(suiId, null, null, delRoleIds);
+				//删除用户物料信息
+				//删除用户库区信息
+			}	
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage saveUserMenu(Integer suiId, String smenuIds)
+			throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			//查看该用户原来的菜单
+			SysGxUserMenu sysGxUserMenu = new SysGxUserMenu();
+			sysGxUserMenu.setSuiId(suiId);
+			List<SysGxUserMenu> oldMenuList = this.getList(sysGxUserMenu);
+			String delSmenuIds="";
+			List<Integer> newMenuArray= new ArrayList<Integer>();
+			if(smenuIds != null && !smenuIds.trim().equals("")){
+				String[] smenuIdArray = smenuIds.split(",");
+				//查看新增的菜单
+				for(String smenuIdStr : smenuIdArray){
+					Integer smenuId = Integer.parseInt(smenuIdStr);
+					boolean isFind=false;
+					if(oldMenuList != null && oldMenuList.size() > 0){
+						for(SysGxUserMenu oldMenu : oldMenuList){
+							if(smenuId.equals(oldMenu.getSmenuId())){
+								isFind=true;
+								break;
+							}
+						}
+					}
+					if(!isFind)
+						newMenuArray.add(smenuId);
+				}
+				//查看删除菜单
+				if(oldMenuList != null && oldMenuList.size() > 0){
+					for(SysGxUserMenu oldMenu : oldMenuList){
+						boolean isFind=false;
+						for(String smenuIdStr : smenuIdArray){
+							Integer smenuId = Integer.parseInt(smenuIdStr);
+							if(smenuId.equals(oldMenu.getSmenuId())){
+								isFind=true;
+								break;
+							}
+						}
+						if(!isFind)
+							delSmenuIds+=oldMenu.getSmenuId()+",";
+					}
+				}
+			}else{//删除所有菜单
+				if(oldMenuList != null && oldMenuList.size() > 0){
+					for(SysGxUserMenu oldMenu : oldMenuList)
+						delSmenuIds+=oldMenu.getSmenuId()+",";
+				}
+			}
+			//新增用户菜单信息
+			if(newMenuArray != null && newMenuArray.size() > 0){
+				//保存用户菜单信息
+				for(Integer smenuId : newMenuArray){
+					SysGxUserMenu userMenu = new SysGxUserMenu();
+					userMenu.setSuiId(suiId);
+					userMenu.setSmenuId(smenuId);
+					userMenu.setType(2);
+					this.newObject(userMenu);
+						
+				}
+			}
+			//删除原有的菜单信息
+			if(delSmenuIds != null && !delSmenuIds.trim().equals("")){
+				delSmenuIds =delSmenuIds.substring(0, delSmenuIds.length()-1);
+				sysUserInfoDao.delUserMenus(suiId, null, delSmenuIds, null);
+			}	
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public SysRetrunMessage saveUserControl(Integer suiId, String sconIds,String oprates) throws HSKException {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try{
+			//查看该用户原来的控件
+			List<SysGxControlUser> oldControlList = sysUserInfoDao.getSysGxControlUserListBySconIds(suiId, sconIds);
+			//新增
+			List<Map<String,Integer>> newControlList = new ArrayList<Map<String,Integer>>();
+			//修改
+			List<SysGxControlUser> editControlList = new ArrayList<SysGxControlUser>();
+			//删除
+			String delSconIds="";
+			if(sconIds != null && !sconIds.trim().equals("")){
+				String[] sconIdArray = sconIds.split(",");
+				String[] oprateArray = oprates.split(",");
+				//查看新增，修改的
+				for(int i=0;i < sconIdArray.length;i++){
+					Integer sconId = Integer.parseInt(sconIdArray[i]);
+					Integer ifOperate=Integer.parseInt(oprateArray[i]);
+					if(ifOperate != 0){//如果不是隐藏
+						boolean isFind=false;
+						if(oldControlList != null && oldControlList.size() > 0){
+							for(SysGxControlUser controlUser : oldControlList){
+								if(sconId.equals(controlUser.getSconId())){//如果找到
+									if(controlUser.getIfOperate() != ifOperate){//如果操作不一样则为修改
+										controlUser.setIfOperate(ifOperate);
+										editControlList.add(controlUser);
+									}
+									isFind=true;
+									break;
+								}
+							}
+						}
+						if(!isFind){
+							Map<String,Integer> newControl = new HashMap<String,Integer>();
+							newControl.put("sconId", sconId);
+							newControl.put("ifOperate", ifOperate);
+							newControlList.add(newControl);
+						}
+					}
+				}
+				
+				//查看删除的
+				if(oldControlList != null && oldControlList.size() > 0){
+					for(SysGxControlUser controlUser : oldControlList){
+						for(int i=0;i < sconIdArray.length;i++){
+							Integer sconId = Integer.parseInt(sconIdArray[i]);
+							Integer ifOperate=Integer.parseInt(oprateArray[i]);
+							if(ifOperate.equals(0) && sconId.equals(controlUser.getSconId())){
+								delSconIds+=sconId+",";
+								break;
+							}
+						}
+					}
+				}
+			}
+			if(newControlList != null && newControlList.size() > 0){
+				for(Map<String,Integer> map : newControlList){
+					SysGxControlUser sysGxControlUser = new SysGxControlUser();
+					sysGxControlUser.setIfOperate(map.get("ifOperate"));
+					sysGxControlUser.setSconId(map.get("sconId"));
+					sysGxControlUser.setSuiId(suiId);
+					sysGxControlUser.setType(2);
+					this.newObject(sysGxControlUser);
+				}
+			}
+			
+			if(editControlList != null && editControlList.size() > 0){
+				for(SysGxControlUser sysGxControlUser : editControlList){
+					sysGxControlUser.setType(2);
+					sysGxControlUser.setSroleId(null);
+					this.updateObject(sysGxControlUser);
+				}
+			}
+			if(delSconIds != null && !delSconIds.trim().equals("")){
+				delSconIds = delSconIds.substring(0, delSconIds.length()-1);
+				sysUserInfoDao.delUserControls(suiId, null, delSconIds, null);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			srm.setCode(0l);
+			srm.setMeg("操作失败!");
+		}
+		return srm;
+	}
+
+	@Override
+	public void toSel(Integer suiId) throws HSKException {
+		this.getModel().addAttribute("suiId", suiId);
+	}
+
+	@Override
+	public SysRetrunMessage getSysUserMenuList() throws HSKException {
+		SysUserInfo sysUserInfo = this.GetOneSessionAccount();
+		SysRetrunMessage srm = new SysRetrunMessage(1);
+		try {
+			List<Map<Object,Object>> list = sysUserInfoDao.getSysUserMenuListBySuiId(sysUserInfo.getSuiId());
+			srm.setObj(combinationMenu(list,null));
+		} catch (HSKDBException e) {
+			srm.setCode(Long.valueOf(0));
+			srm.setMeg(e.getMessage());
+			e.printStackTrace();
+		}
+		return srm;
+	}
+	
+	//组合菜单
+		private List<Map<String, Object>> combinationMenu(List<Map<Object,Object>> list,String pid){
+			List<Map<String, Object>> reList = new ArrayList<Map<String, Object>>();
+			for(Map<Object,Object> info : list){
+				if(pid==null && info.get("SYS_SMENU_ID")==null){
+					Map<String, Object> reMap= new HashMap<String,Object>();
+					reMap.put("name", info.get("MENU_NAME"));
+					reMap.put("icon", info.get("MENU_ICON"));
+					reMap.put("address", info.get("MENU_ADDREE"));
+					reMap.put("filePath", info.get("ROOT_PATH"));
+					List<Map<String, Object>> childList = this.combinationMenu(list,info.get("SMENU_ID").toString());
+					if(childList != null && childList.size() > 0)
+						reMap.put("child", childList);
+					reList.add(reMap);
+				}else if(pid != null && info.get("SYS_SMENU_ID") != null && info.get("SYS_SMENU_ID").toString().equals(pid)){
+					Map<String, Object> reMap= new HashMap<String,Object>();
+					reMap.put("name", info.get("MENU_NAME"));
+					reMap.put("icon", info.get("MENU_ICON"));
+					reMap.put("address", info.get("MENU_ADDREE"));
+					reMap.put("menuType", info.get("MENU_TYPE"));
+					reMap.put("filePath", info.get("ROOT_PATH"));
+					List<Map<String, Object>> childList = this.combinationMenu(list,info.get("SMENU_ID").toString());
+					if(childList != null && childList.size() > 0)
+						reMap.put("child", childList);
+					reList.add(reMap);
+				}
+			}
+			return reList;
+		}
+
+		 
+		public SysRetrunMessage getSysUserControlList() throws HSKException {
+			SysUserInfo sysUserInfo = this.GetOneSessionAccount();
+			SysRetrunMessage srm = new SysRetrunMessage(1);
+			try {
+				List<Map<Object,Object>> list = sysUserInfoDao.getSysUserControlListBySuiId(sysUserInfo.getSuiId());
+				srm.setObj(list);
+			} catch (HSKDBException e) {
+				srm.setCode(Long.valueOf(0));
+				srm.setMeg(e.getMessage());
+				e.printStackTrace();
+			}
+			return srm;
+		}
+
+		
+		public void saveBD() throws HSKException {
+//			try {
+//			SysUserInfo user01 = new SysUserInfo();
+//			user01.setUserCode("123456789012345");
+//			 sysUserInfoDao.saveUser(user01);
+			this.getJdbcTemplate().update(" INSERT INTO  sys_user_info (user_code)VALUES ( '123456789012345') ");
+			System.out.println("user1 success");
+//			SysUserInfo user02 = new SysUserInfo();
+//			user02.setUserCode("123456789012345678901234567890123");
+//			sysUserInfoDao.saveUser(user02);
+			this.getJdbcTemplate().update(" INSERT INTO  sys_user_info (user_code)VALUES ( '123456789012345678901234567890123') ");
+			System.out.println("user2 success");
+			
+//			} catch (HSKDBException e) {
+//				new HSKException(e);
+//				e.printStackTrace();
+//			}
+		}
+
+		@Override
+		public SysRetrunMessage saveWebSysUser(SysUserInfo sysUserInfo)
+				throws HSKException {
+			SysRetrunMessage srm = new SysRetrunMessage(1l);
+			try {
+				this.updateObject(sysUserInfo);
+			} catch (Exception e) {
+				srm.setCode(0l);
+				srm.setMeg("操作失败!");
+				e.printStackTrace();
+			}
+			
+			return srm;
+		}
+		private final String dirName = "upFile";
+		@Override
+		public SysRetrunMessage updateHeard(String imgSrc) throws HSKException {
+			SysRetrunMessage srm = new SysRetrunMessage(1);
+			try{
+				SysUserInfo ma = this.GetOneSessionAccount();
+				String savePath = SystemContext.updown_File_path + "/";
+				String fileName="header"+System.currentTimeMillis();
+				String rootUrl = request.getContextPath() + "/fileInfo/updown/";
+				// 检查目录
+				File uploadDir = new File(savePath);
+				if (!uploadDir.isDirectory()) {
+					srm.setCode(0l);
+					srm.setMeg("上传目录不存在。");
+					return srm;
+				}
+				// 检查目录写权限
+				if (!uploadDir.canWrite()) {
+					srm.setCode(0l);
+					srm.setMeg("上传目录没有写权限。");
+					return srm;
+				}
+				String UserCode = (ma == null) ? null : ma.getAccount();
+				// 创建文件夹
+				UserCode = UserCode == null ? "admin" : UserCode;
+				savePath += this.dirName + "/" + UserCode + "/";
+				rootUrl += this.dirName + "/" + UserCode + "/";
+				File saveDirFile = new File(savePath);
+				if (!saveDirFile.exists()) {
+					saveDirFile.mkdirs();
+				}
+				String fileDesk=ImageBase64Util.GenerateImage(imgSrc,fileName,savePath);
+				SysFileInfo sysFileInfo=new SysFileInfo();
+				sysFileInfo.setFileName(fileName+".png");
+				sysFileInfo.setFilePath(fileDesk);
+				sysFileInfo.setFileType(".png");
+				sysFileInfo.setRootPath(rootUrl+fileName+".png");
+				sysFileInfo.setFileState("1");
+				String fileCode = RandomCodeUtils.getRandomString(32);
+				sysFileInfo.setFileCode(fileCode);
+				this.newObject(sysFileInfo);
+				ma.setBarCode(fileCode);
+				ma.setBarCodePath(rootUrl+fileName+".png");
+				this.updateObject(ma);
+				this.SetSessionAccount(ma);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			return srm;
+		}
+
+		@Override
+		public SysRetrunMessage showHeard() throws HSKException {
+			SysRetrunMessage srm = new SysRetrunMessage(1L);
+			String heardPath ="";
+			if(this.GetOneSessionAccount().getBarCodePath() != null)
+				heardPath = this.GetOneSessionAccount().getBarCodePath().toString();
+			srm.setObj(heardPath);
+			return srm;
+		}
+
+		@Override
+		public SysUserInfo findSysUserInfo(Integer suiId) throws HSKException {
+			SysUserInfo sysUserInfo = new SysUserInfo(suiId);
+			sysUserInfo = (SysUserInfo) this.getOne(sysUserInfo);
+			return sysUserInfo;
+		}
+
+		@Override
+		public SysRetrunMessage updatePass(Integer sroId, Integer userType, String password) throws HSKException {
+			SysRetrunMessage srm = new SysRetrunMessage(1L);
+			try {
+				Md5PasswordEncoder md5= new Md5PasswordEncoder();
+				SysUserInfo sysUserInfo = new SysUserInfo();
+				sysUserInfo.setSroleId(sroId);
+				sysUserInfo.setUserType(userType);
+				sysUserInfo = (SysUserInfo) this.getOne(sysUserInfo);
+				sysUserInfo.setPassword(md5.encodePassword(password, null));
+				this.updateObject(sysUserInfo);
+			} catch (Exception e) {
+				srm.setCode(0l);
+				srm.setMeg("操作失败!");
+				e.printStackTrace();
+			}
+			return srm;
+		}
+
+		@Override
+		public List<SysUserInfo> getSysUserInfoListInSuiIds(String suiIds) throws HSKException {
+			List<SysUserInfo> list = new ArrayList<SysUserInfo>();
+			try {
+				list = sysUserInfoDao.getSysUserInfoListInSuiIds(suiIds);
+			} catch (HSKDBException e) {
+				e.printStackTrace();
+			}
+			return list;
+		}
+}

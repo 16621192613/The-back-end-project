@@ -1,0 +1,458 @@
+package com.hsk.angeldoctor.web.operate.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hsk.angeldoctor.api.persistence.AgAppNotification;
+import com.hsk.angeldoctor.api.persistence.AgBusinessUser;
+import com.hsk.angeldoctor.api.persistence.AgInsideInfo;
+import com.hsk.angeldoctor.web.agent.service.IAgBusinessUserService;
+import com.hsk.angeldoctor.web.operate.service.IAgAppDeviceService;
+import com.hsk.angeldoctor.web.operate.service.IAgInsideInfoService;
+import com.hsk.angeldoctor.web.operate.service.ISysChannelInfoService;
+import com.hsk.angeldoctor.web.operate.service.ISysRoleChannelGxService;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.controller.imp.DSTController;
+import com.hsk.xframe.api.persistence.SysParameter;
+import com.hsk.xframe.api.persistence.SysUserInfo;
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+import com.hsk.xframe.api.utils.freeMarker.RandomCodeUtils;
+import com.hsk.xframe.api.utils.freeMarker.SendSms;
+import com.hsk.xframe.web.sysUser.service.ISysUserService;
+import com.hsk.xframe.web.sysfile.service.IFileService;
+import com.hsk.xframe.web.sysparam.service.ISysParameterService;
+import com.hsk.xframe.web.sysrole.service.ISysRoleService;
+import com.qiniu.util.Auth;
+import com.qiniu.util.StringMap;
+
+@Controller
+public class SystemController extends DSTController{
+	
+	
+	
+	@Autowired
+	private IAgInsideInfoService agInsideInfoService;
+	@Autowired
+	private ISysUserService sysUserService;
+	@Autowired
+	private ISysChannelInfoService sysChannelInfoService;
+	@Autowired
+	private ISysRoleService sysRoleService;
+	@Autowired
+	private ISysRoleChannelGxService sysRoleChannelGxService;
+	@Autowired
+	private IAgBusinessUserService agBusinessUserService;
+	@Autowired
+	private ISysParameterService sysParameterService;
+	@Autowired
+	private IFileService fileService;
+	@Autowired
+	private IAgAppDeviceService agAppDeviceService;
+	
+	/**
+	 * 获取商务人士列表
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param mobile
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getInternalList.htm")
+	public void getInternalList(HttpServletRequest request,HttpServletResponse response,String name,String mobile,String status) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agInsideInfoService.setRequest(request);
+		AgInsideInfo agInsideInfo = new AgInsideInfo();
+		agInsideInfo.setName(name);
+		agInsideInfo.setMobile(mobile);
+		agInsideInfo.setStatus(status);
+		srm.setObj(agInsideInfoService.getAgInsideInfoList(agInsideInfo));
+		returnData(response,srm);
+	}
+	/**
+	 * 获取商务人士详情
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getInternalInfo.htm")
+	public void getInternalInfo(HttpServletRequest request,HttpServletResponse response,Integer id) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agInsideInfoService.setRequest(request);
+		AgInsideInfo agInsideInfo = agInsideInfoService.findObject(id);
+		srm.setObj(agInsideInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 保存商务人士信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @param name
+	 * @param mobile
+	 * @param email
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/saveInternalInfo.htm")
+	public void saveInternalInfo(HttpServletRequest request,HttpServletResponse response,Integer id,String name,String mobile,String email,String status) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agInsideInfoService.setRequest(request);
+		AgInsideInfo agInsideInfo = new AgInsideInfo();
+		if(id !=null){
+			agInsideInfo = agInsideInfoService.findObject(id);
+			agInsideInfo.setName(name);
+			agInsideInfo.setMobile(mobile);
+			agInsideInfo.setEmail(email);
+			agInsideInfo.setStatus(status);
+		}else{
+			agInsideInfo.setName(name);
+			agInsideInfo.setMobile(mobile);
+			agInsideInfo.setEmail(email);
+			agInsideInfo.setStatus(status);
+		}
+		srm = agInsideInfoService.saveOrUpdateObject(agInsideInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 删除商务人士信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/delInternalInfo.htm")
+	public void delInternalInfo(HttpServletRequest request,HttpServletResponse response,Integer id) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agInsideInfoService.setRequest(request);
+		srm = agInsideInfoService.deleteObject(id);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 获取账号列表
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param actualName
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getUserList.htm")
+	public void getUserList(HttpServletRequest request,HttpServletResponse response,String name,String actualName) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		sysUserService.setRequest(request);
+		SysUserInfo sysUserInfo = new SysUserInfo();
+		sysUserInfo.setAccount(name);
+		sysUserInfo.setUserName(actualName);
+		srm.setObj(sysUserService.getSysUserPager(sysUserInfo));
+		returnData(response,srm);
+	}
+	/**
+	 * 获取账户详情
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/userInfo.htm")
+	public void userInfo(HttpServletRequest request,HttpServletResponse response,Integer id) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		sysUserService.setRequest(request);
+		srm.setObj(sysUserService.findSysUser(id));
+		returnData(response,srm);
+	}
+	/**
+	 * 保存账户信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @param username
+	 * @param portalRoleId
+	 * @param actualName
+	 * @param password
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/saveUserInfo.htm")
+	public void saveUserInfo(HttpServletRequest request,HttpServletResponse response,Integer id,String name,Integer portalRoleId,String actualName,String password) throws Exception{
+		sysUserService.setRequest(request);
+		SysUserInfo sysUserInfo = new SysUserInfo();
+		if(id !=null){
+			sysUserInfo = sysUserService.findSysUserInfo(id);
+			sysUserInfo.setUserRole(portalRoleId);
+			if(password !=null && !password.trim().equals(""))
+				sysUserInfo.setPassword(password);
+			sysUserInfo.setCreateDate(new Date());
+		}else{
+			sysUserInfo.setAccount(name);
+			sysUserInfo.setUserRole(portalRoleId);
+			sysUserInfo.setUserName(actualName);
+			sysUserInfo.setPassword(password);
+		}
+		
+		SysRetrunMessage srm=sysUserService.saveSysUser(sysUserInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 删除系统账号
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/delUserInfo.htm")
+	public void delUserInfo(HttpServletRequest request,HttpServletResponse response,Integer id) throws Exception{
+		sysUserService.setRequest(request);
+		SysRetrunMessage srm=sysUserService.delSysUser(id);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取菜单列表
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param actualName
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getChannelList.htm")
+	public void getChannelList(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		sysChannelInfoService.setRequest(request);
+		srm.setObj(sysChannelInfoService.getSysChannelInfoList());
+		returnData(response,srm);
+	}
+	/**
+	 * 获取角色列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getRolelList.htm")
+	public void getRolelList(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		sysRoleService.setRequest(request);
+		srm.setObj(sysRoleService.getSysRoleInfoList());
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 获取角色列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getRoleChannelList.htm")
+	public void getRoleChannelList(HttpServletRequest request,HttpServletResponse response,Integer portalRoleId) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		sysRoleChannelGxService.setRequest(request);
+		srm.setObj(sysRoleChannelGxService.getSysRoleChannelGxListByRoleId(portalRoleId));
+		returnData(response,srm);
+	}
+	/**
+	 * 保存角色信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/saveRoleChannel.htm")
+	public void saveRoleChannel(HttpServletRequest request,HttpServletResponse response,Integer portalRoleId,String menuIds) throws Exception{
+		sysRoleChannelGxService.setRequest(request);
+		SysRetrunMessage srm=sysRoleChannelGxService.saveSysRoleChannelGx(portalRoleId, menuIds);
+		returnData(response,srm);
+	}
+	/**
+	 * 删除角色信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/delRoleChannel.htm")
+	public void delRoleChannel(HttpServletRequest request,HttpServletResponse response,String userPermissionIds) throws Exception{
+		sysRoleChannelGxService.setRequest(request);
+		SysRetrunMessage srm=sysRoleChannelGxService.deleteSysRoleChannelGx(userPermissionIds);
+		returnData(response,srm);
+	}
+	/**
+	 * 删除角色信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/updatePass.htm")
+	public void updatePass(HttpServletRequest request,HttpServletResponse response,String newPass) throws Exception{
+		sysUserService.setRequest(request);
+		SysRetrunMessage srm=sysUserService.updateLoginUserPass(newPass);
+		returnData(response,srm);
+	}
+	/**
+	 * 业务员更新个人银行卡信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/updateBank.htm")
+	public void updateBank(HttpServletRequest request,HttpServletResponse response,String bankName,String accountName,String accountNumber) throws Exception{
+		agBusinessUserService.setRequest(request);
+		AgBusinessUser agBusinessUser = agBusinessUserService.findObject(this.getLoginSysUserInfo(request).getSroleId());
+		agBusinessUser.setReservedBankName(bankName);
+		agBusinessUser.setReservedAccountName(accountName);
+		agBusinessUser.setReservedAccountNumber(accountNumber);
+		SysRetrunMessage srm=agBusinessUserService.saveOrUpdateObject(agBusinessUser);
+		returnData(response,srm);
+	}
+	/**
+	 * 增加版本信息：
+	 * @param request
+	 * @param response
+	 * @param versionCode
+	 * @param versionName
+	 * @param content
+	 * @param force
+	 * @param downloadUrl
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/addVersion.htm")
+	public void addVersion(HttpServletRequest request,HttpServletResponse response,String versionCode,String versionName,String content,String force,String downloadUrl,String type) throws Exception{
+		sysParameterService.setRequest(request);
+		String code="";
+		if(type.equals("a"))
+			code=CommonUtil.VERSION_PARM_CODE;
+		else
+			code=CommonUtil.VERSION_PARM_CODE2;
+		SysParameter sysParameter = sysParameterService.findSysParameterByCode(code);
+		sysParameter.setParamValue(versionCode);
+		sysParameter.setParamNode(versionName);
+		sysParameter.setParamStr01(content);
+		sysParameter.setParamStr02(force);
+		sysParameter.setParamStr03(downloadUrl);
+		SysRetrunMessage srm=sysParameterService.saveSysParameter(sysParameter);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取版本信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getVersion.htm")
+	public void getVersion(HttpServletRequest request,HttpServletResponse response,String type) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		sysParameterService.setRequest(request);
+		String code="";
+		if(type.equals("a"))
+			code=CommonUtil.VERSION_PARM_CODE;
+		else
+			code=CommonUtil.VERSION_PARM_CODE2;
+		SysParameter sysParameter = sysParameterService.findSysParameterByCode(code);
+		srm.setObj(sysParameter);
+		returnData(response,srm);
+	}
+	/**
+	 * 极光推送绑定jupsh
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/updateJpush.htm")
+	public void updateJpush(HttpServletRequest request,HttpServletResponse response,String type,String registrationID) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm =agAppDeviceService.saveAgAppDevice(type, registrationID);
+		returnData(response,srm);
+	}
+	/**
+	 * app获取消息列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getNotificationList.htm")
+	public void getNotificationList(HttpServletRequest request,HttpServletResponse response)throws Exception {
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgAppNotification att_AgAppNotification = new AgAppNotification();
+		att_AgAppNotification.setAgentId(this.getLoginSysUserInfo(request).getSroleId());
+		srm.setObj(agAppDeviceService.getPagerModelObject(att_AgAppNotification));
+		returnData(response,srm);
+	}
+	/**
+	 * 获取七牛token
+	 * @param request
+	 * @param response
+	 * @param type
+	 * @param registrationID
+	 * @throws Exception
+	 */
+	public static String UP_TOKEN="";
+	public static Date UP_DATE;
+	public static long expireSeconds = 3600*12;
+	@RequestMapping(value = "/system/getQn.htm")
+	public void getQn(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		boolean isCreate=false;
+		if(UP_TOKEN==null || UP_TOKEN.equals("")){
+			isCreate=true;
+		}else{
+			Date now = new Date();
+			long l=now.getTime()-UP_DATE.getTime();  
+			if((l/1000)>=expireSeconds)
+				isCreate=true;
+		}
+		if(isCreate){
+			Auth auth = Auth.create(CommonUtil.QN_ACCESSKEY, CommonUtil.QN_SECRETKEY);
+			StringMap putPolicy = new StringMap();
+			long expireSeconds = 3600*12;
+			UP_TOKEN = auth.uploadToken(CommonUtil.QN_BUCKET, null, expireSeconds, putPolicy);
+			UP_DATE=new Date();
+		}else{
+			Auth auth = Auth.create(CommonUtil.QN_ACCESSKEY, CommonUtil.QN_SECRETKEY);
+			StringMap putPolicy = new StringMap();
+			long expireSeconds = 3600*12;
+			UP_TOKEN = auth.uploadToken(CommonUtil.QN_BUCKET, null, expireSeconds, putPolicy);
+			UP_DATE=new Date();
+		}
+		srm.setObj(UP_TOKEN);
+		returnData(response,srm);
+	}
+	/**
+	 * 发送短信验证码
+	 * @param request
+	 * @param response
+	 * @param type
+	 * @param registrationID
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/system/getPhoneCode.htm")
+	public void getPhoneCode(HttpServletRequest request,HttpServletResponse response,String mobile,String code) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		if(code==null || code.trim().equals(""))
+			code=RandomCodeUtils.getRandomData(6);
+		boolean flag=SendSms.sendSmsVerification(mobile, code);
+		if(!flag){
+			srm.setCode(0l);
+			srm.setMeg("短信发送失败!");
+		}else{
+			//将验证码信息写入缓存中
+			CommonUtil.addSmsMap(mobile, code);
+			srm.setCode(1l);
+			srm.setMeg("短信发送成功!");
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 上传文件
+	 */
+	@RequestMapping(value = "/system/upfile.htm")
+	public void upfile(HttpServletRequest request ,HttpServletResponse response,String fieldtype) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		fileService.setRequest(request);
+		srm = fileService.addfile(fieldtype);
+		returnData(response,srm);
+	}
+	
+}

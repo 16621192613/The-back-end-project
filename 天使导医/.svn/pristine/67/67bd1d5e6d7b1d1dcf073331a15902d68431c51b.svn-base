@@ -1,0 +1,155 @@
+package com.hsk.xframe.api.filter;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.supper.until.json.JsonUtil;
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+
+
+public class TokenFilter implements Filter{
+	
+ 
+ 
+	private String NOT_FILTER_STR="/system/getVersion.htm,/system/addVersion.htm,/system/upfile.htm,/wechat/informationList.htm,/hospital/provAndCityList.htm,/add.htm,get11.htm,/system/test.htm,/testList.htm,/system/login.htm,/system/hospitalLogin.htm,/system/agentlogin.htm,/system/businesslogin.htm,/system/getQn.htm,/system/getPhoneCode.htm";
+	private String WECHAT_FILTER_STR="/wechat/";
+	private String OUT_FILTER_STR="/outside/";
+	private String WECHAT_REQ_STR="/wechatreq/";
+	private String WECHAT_OPEN_STR="/openwechat/";
+	@Override
+	public void destroy() {
+		
+	}
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)throws IOException, ServletException {
+		 HttpServletRequest req = (HttpServletRequest) request;
+	     HttpServletResponse resp = (HttpServletResponse) response;
+	     resp.setHeader("Access-Control-Allow-Origin", "*");  
+	     resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");  
+	     resp.setHeader("Access-Control-Max-Age", "3600");  
+	     resp.setHeader("Access-Control-Allow-Headers", "Authentication,Origin, X-Requested-With, Content-Type, Accept,token,openId");  //x-requested-with
+	     //过滤不需要检测token的接口
+	     String requestUrl=req.getRequestURL().toString();
+	     String[] notStrArray=NOT_FILTER_STR.split(",");
+	     boolean isFilter=true;
+	     for(String notStr : notStrArray){
+	    	 if(requestUrl.contains(notStr)){
+	    		 isFilter=false;
+	    		 filterChain.doFilter(req, resp);
+	    		 break;
+	    	 }
+	     }
+	     if(isFilter && requestUrl.contains(OUT_FILTER_STR)){
+	    	 isFilter=false;
+    		 filterChain.doFilter(req, resp);
+	     }
+	     if(isFilter && requestUrl.contains(WECHAT_OPEN_STR)){
+	    	 isFilter=false;
+    		 filterChain.doFilter(req, resp);
+	     }
+	     if(isFilter && requestUrl.contains(WECHAT_REQ_STR)){
+	    	 String openId="";
+			 if(req.getSession().getAttribute("wx_openId")!=null)
+				 openId=req.getSession().getAttribute("wx_openId").toString();
+			 if(openId!=null && !openId.equals("")){
+				 filterChain.doFilter(request, response);
+			 }else{
+				String htmUrl="";
+				htmUrl=requestUrl.substring(requestUrl.lastIndexOf("/")+1, requestUrl.length());
+			    String userAgent = req.getHeader("User-Agent");
+				if (userAgent.indexOf("MicroMessenger") > -1 || userAgent.toLowerCase().indexOf("micromessenger") > -1) {
+					String code = req.getParameter("code");
+					if(code ==null || code.equals("")){
+						String redirect_uri =CommonUtil.HTTP_PRE+htmUrl;
+						try {
+							redirect_uri = URLEncoder.encode(redirect_uri, "UTF-8");
+						} catch (Exception e) {
+							// TODO: handle exception
+						}
+						String redirectUrl = "https://open.weixin.qq.com/connect/oauth2/authorize?"
+								+ "appid=" + "wx298267ec6714cea0"
+								+ "&redirect_uri=" + redirect_uri
+								+ "&response_type=code"
+								+ "&scope=snsapi_userinfo"
+								+ "&state=angeldoctor#wechat_redirect";
+						resp.sendRedirect(redirectUrl);
+					}else
+						filterChain.doFilter(req, resp);
+				} else {
+					resp.sendRedirect("wechatreq/"+htmUrl);
+				}
+			 }
+	    	 isFilter=false;
+    		 //filterChain.doFilter(req, resp);
+	     }
+	     //过滤微信端接口
+	     if(isFilter && requestUrl.contains(WECHAT_FILTER_STR)){
+    		 isFilter=false;
+    		 String openId = req.getHeader("openId");
+    		 if(openId==null || openId.equals("")){
+				 Map<String,Object> reMap=new HashMap<String,Object>();
+				 reMap.put("code", 0);
+				 reMap.put("message", "请传入openId!");
+				 response.setCharacterEncoding("utf-8");
+				 response.setContentType("application/json;charset=utf-8");
+				 PrintWriter out = null;
+				 out = response.getWriter();
+				 out.write(JsonUtil.getjsonstr(reMap)); 
+    		 }else{
+    			 filterChain.doFilter(req, resp);
+    		 }
+    	 }
+	     
+	     if(isFilter){
+	    	 String token = req.getHeader("token");
+				if(token!=null && !token.trim().equals("")){
+					if(TokenUtil.TOKEN_MAP.containsKey(token)){//如果存在，更新登录时间
+						Map<String,Object> tokenData = TokenUtil.TOKEN_MAP.get(token);
+						tokenData.put("createTime", new Date());
+						TokenUtil.TOKEN_MAP.put(token, tokenData);
+						filterChain.doFilter(req, resp);
+					}else{
+						 Map<String,Object> reMap=new HashMap<String,Object>();
+						 reMap.put("code", 403);
+						 reMap.put("message", "帐号失效，请得重新登录!");
+						 response.setCharacterEncoding("utf-8");
+						 response.setContentType("application/json;charset=utf-8");
+						 PrintWriter out = null;
+						 out = response.getWriter();
+						 out.write(JsonUtil.getjsonstr(reMap)); 
+					}
+				}else{
+					 Map<String,Object> reMap=new HashMap<String,Object>();
+					 reMap.put("code", 403);
+					 reMap.put("message", "请先登录获取token!");
+					 response.setCharacterEncoding("utf-8");
+					 response.setContentType("application/json;charset=utf-8");
+					 PrintWriter out = null;
+					 out = response.getWriter();
+					 out.write(JsonUtil.getjsonstr(reMap)); 
+				}
+	     }
+	     
+	}
+
+	@Override
+	public void init(FilterConfig arg0) throws ServletException {
+		
+	}
+
+}

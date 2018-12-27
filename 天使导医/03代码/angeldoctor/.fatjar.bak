@@ -1,0 +1,14 @@
+#Fat Jar Configuration File
+#Thu Feb 09 19:52:28 CST 2017
+onejar.license.required=true
+manifest.classpath=
+manifest.removesigners=true
+onejar.checkbox=false
+jarname=xcode_fat.jar
+manifest.mergeall=true
+manifest.mainclass=com.hsk.xframe.web.window.XcodeFrame
+manifest.file=<createnew>
+jarname.isextern=false
+onejar.expand=
+excludes=
+includes=

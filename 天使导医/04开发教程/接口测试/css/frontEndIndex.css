@@ -1,0 +1,284 @@
+@charset "UTF-8";
+ 
+.form-bg{
+    background: #00b4ef;
+}
+
+.form-horizontal{
+    background: #fff;
+    padding-bottom:8px;
+    border-radius: 15px; 
+}
+
+.form-horizontal .heading{
+    display: block;
+    font-size: 26px;
+    font-weight: 100;
+    padding: 16px 0px 8px 45px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;   
+}
+.form-horizontal .heading .open-close{
+    float: right;
+    padding: 4px 25px; 
+    font-size: 12px;
+}
+
+.form-horizontal .form-group{
+     
+    padding: 0 30px;
+    margin: 0 0 16px 0;
+    position: relative;
+}
+.form-horizontal .form-control{
+    background: #f0f0f0;
+    border: none;
+    border-radius: 20px;
+    box-shadow: none;
+    padding: 0 20px 0 45px;
+    height: 40px;
+    transition: all 0.3s ease 0s;
+}
+.form-horizontal .form-control:focus{
+    background: #e0e0e0;
+    box-shadow: none;
+    outline: 0 none;
+}
+.form-horizontal .form-group i{
+    position: absolute;
+    top: 12px;
+    left: 60px;
+    font-size: 17px;
+    color: #c8c8c8;
+    transition : all 0.5s ease 0s;
+}
+.form-horizontal .form-control:focus + i{
+    color: #00b4ef;
+}
+.form-horizontal .fa-question-circle{
+    display: inline-block;
+    position: absolute;
+    top: 12px;
+    right: 60px;
+    font-size: 20px;
+    color: #808080;
+    transition: all 0.5s ease 0s;
+}
+.form-horizontal .fa-question-circle:hover{
+    color: #000;
+}
+.form-horizontal .main-checkbox{
+    float: left;
+    width: 20px;
+    height: 20px;
+    background: #11a3fc;
+    border-radius: 50%;
+    position: relative;
+    margin: 5px 0 0 5px;
+    border: 1px solid #11a3fc;
+}
+.form-horizontal .main-checkbox label{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+.form-horizontal .main-checkbox label:after{
+    content: "";
+    width: 10px;
+    height: 5px;
+    position: absolute;
+    top: 5px;
+    left: 4px;
+    border: 3px solid #fff;
+    border-top: none;
+    border-right: none;
+    background: transparent;
+    opacity: 0;
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+}
+.form-horizontal .main-checkbox input[type=checkbox]{
+    visibility: hidden;
+}
+.form-horizontal .main-checkbox input[type=checkbox]:checked + label:after{
+    opacity: 1;
+}
+.form-horizontal .text{
+    float: left;
+    margin-left: 7px;
+    line-height: 20px;
+    padding-top: 5px;
+    text-transform: capitalize;
+}
+.form-horizontal .btn{
+    float: right;
+    font-size: 14px;
+    color: #fff;
+    background: #00b4ef;
+    border-radius: 30px;
+    padding: 4px 25px;
+    border: none;
+    text-transform: capitalize;
+    transition: all 0.5s ease 0s;
+}
+@media only screen and (max-width: 479px){
+    .form-horizontal .form-group{
+        padding: 0 25px;
+    }
+    .form-horizontal .form-group i{
+        left: 45px;
+    }
+    .form-horizontal .btn{
+        padding: 10px 20px;
+    }
+}
+ 
+
+
+
+.g-login {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  width: 400px;
+  height: 300px;
+}
+
+
+.u-mask {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 900;
+	width: 100%;
+	height: 100%;
+	background-color: #888888;
+	filter: alpha(opacity = 80);
+	-moz-opacity: 0.6;
+	-khtml-opacity: 0.6;
+	opacity: 0.6;
+}
+
+.u-shade {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 900;
+	width: 100%;
+	height: 100%;
+	background-color: #fff;
+	filter: alpha(opacity = 50);
+	-moz-opacity: 0.5;
+	-khtml-opacity: 0.5;
+	opacity: 0.5;
+}
+
+.u-shade img {
+	z-index: 901;
+	width: 32px;
+	top: 50%;
+	left: 50%;
+	position: fixed;
+}
+
+
+.container_x {
+  padding-right:5px;
+  padding-left:5px;
+  margin-right: auto;
+  margin-left: auto; 
+}
+.form-group-table{
+	padding:0px; 
+}
+
+@media (min-width: 768px) {
+  .container_x {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .container_x {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .container_x {
+    width: 1170px;
+  }
+}
+
+
+.container-fluid {
+	width:100%;
+  padding-right:0px;
+  padding-bottom:0px;
+  padding-left: 0px;
+  margin-right: auto;
+  margin-left: auto;
+  border-bottom:1px solid #eaeaea;
+}
+
+.container-fluid > li.active {
+    border-bottom: 4px solid #19aa8d;
+     border-left: 0px ;
+     background: #fff;
+     
+}
+.container-fluid > li.active > a{
+	color:#777;
+}
+
+.article{position:relative;}
+.section{padding-bottom:5px;position:relative;zoom:1;}
+.section div{padding:15px 0 10px 0;border-bottom:1px solid #eaeaea;}
+
+/* aside */
+.aside{float:right;_display:inline;}
+.aside h2{font:100 22px/40px 'Arial','Microsoft Yahei','微软雅黑','Simhei','黑体';color:#ff8600;}
+
+
+
+.tit01{font:100 20px/24px 'Arial','Microsoft Yahei','微软雅黑','Simhei','黑体';color:#ff8600;padding-top:20px;}
+.tit01 .s_dot{font-size:12px;line-height:24px;}
+
+.tit02{float:left;width:80px;padding-left:10px;border-left:2px solid #000;font:100 18px/24px 'Arial','Microsoft Yahei','微软雅黑','Simhei','黑体';color:#000;margin-top:3px;_display:inline;_width:77px;}
+.tit02 a:link,.tit02 a:visited{color:#000;}
+.tit02 a:hover{color:#ff8600;}
+
+.list01{overflow:hidden;zoom:1;font:100 14px/30px 'Arial','Microsoft Yahei','微软雅黑','Simhei','黑体';}
+.list01 li{text-decoration:none ;float:left;width:94px;white-space:nowrap;_display:inline; list-style: none outside;}
+.list01 .list01_ww{width:188px;}
+.list01 .list01_www{width:282px;}
+.list01 a:link,.list01 a:visited{color:#4b5053;}
+.list01 a:hover{color:#ff8600;text-decoration:underline;}
+
+.list02{}
+.list02 li{overflow:hidden;zoom:1;height:35px;}
+.list02 .p_a{float:left;width:60px;margin-top:5px;margin-right:10px;_display:inline;_margin-right:7px;_margin-top:3px;}
+.list02 img{width:60px;height:60px;}
+.list02 h3{overflow:hidden;zoom:1;font:100 14px/22px 'Arial','Microsoft Yahei','微软雅黑','Simhei','黑体';}
+
+ 
+.list02 h3 a:link{color:#000;}
+.list02 h3 a:visited{color:#666;}
+.list02 h3 a:hover{color:#000;text-decoration:underline;}
+
+
+.list02 p{overflow:hidden;zoom:1;font-size:14px;color:#9a9a9a;}
+
+
+.jumbotron p {
+    margin-bottom: 15px;
+    font-size: 12px;
+    line-height:24px;
+    }
+.jumbotron h5{
+	color: #EC971F;   	
+   } 
+
+

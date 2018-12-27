@@ -1,0 +1,38 @@
+package com.hsk.angeldoctor.web.finance.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hsk.exception.HSKException;
+import com.hsk.xframe.api.controller.imp.DSTController;
+import com.hsk.xframe.api.utils.freeMarker.WeixinUtils;
+import com.hsk.xframe.api.utils.freeMarker.WeixinUtils.OAuthAccessToken;
+
+@Controller
+public class WechatReqController extends DSTController{
+
+	@RequestMapping(value = "/wechatreq/index.htm")
+	public String index(HttpServletRequest request ,HttpServletResponse response) throws HSKException{
+		String reUrl="";
+		String userAgent = request.getHeader("User-Agent");
+		if (userAgent.indexOf("MicroMessenger") > -1 || userAgent.toLowerCase().indexOf("micromessenger") > -1) {
+			String openId="";
+		    if(request.getSession().getAttribute("wx_openId")!=null)
+		    	openId=request.getSession().getAttribute("wx_openId").toString();
+		    if(openId==null || openId.equals("")){
+		    	String code = request.getParameter("code");
+				OAuthAccessToken oAuthAccessToken = WeixinUtils.getOAuthAccessToken(code);
+				openId = oAuthAccessToken.getOpenid();
+				request.getSession().setAttribute("wx_openId", openId);
+		    }
+		    if(openId!=null){
+		    	reUrl="redirect:http://wechat.hisforce.cn/tempWechat/pages/chooseHospital/chooseHospital.html?openId="+openId;
+			}
+		}
+		return reUrl;
+	}
+	
+}

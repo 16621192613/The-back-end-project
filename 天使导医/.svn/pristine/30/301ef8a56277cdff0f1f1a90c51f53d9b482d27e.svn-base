@@ -1,0 +1,437 @@
+package com.hsk.angeldoctor.web.hospital.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hsk.angeldoctor.api.persistence.AgHospitalInfo;
+import com.hsk.angeldoctor.api.persistence.AgHospitalJob;
+import com.hsk.angeldoctor.api.persistence.AgHospitalRole;
+import com.hsk.angeldoctor.api.persistence.AgWorkView;
+import com.hsk.angeldoctor.web.hospital.service.IAgHospitalInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgHospitalJobService;
+import com.hsk.angeldoctor.web.hospital.service.IAgHospitalRoleService;
+import com.hsk.angeldoctor.web.hospital.service.IAgJobMenuGxService;
+import com.hsk.angeldoctor.web.hospital.service.IAgWorkInfoService;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.supper.until.json.JsonUtil;
+import com.hsk.xframe.api.controller.imp.DSTController;
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+import com.hsk.xframe.api.utils.freeMarker.HttpUtil;
+
+@Controller
+public class HospitalController extends DSTController{
+	
+	@Autowired
+	private IAgHospitalInfoService agHospitalInfoService;
+	@Autowired
+	private IAgJobMenuGxService agJobMenuGxService;
+	@Autowired
+	private IAgHospitalRoleService agHospitalRoleService;
+	@Autowired
+	private IAgHospitalJobService agHospitalJobService;
+	@Autowired
+	private IAgWorkInfoService agWorkInfoService;
+	/**
+	 * 获取B端用户登录的菜单列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/doctorMenuList.htm")
+	public void doctorMenuList(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agJobMenuGxService.setRequest(request);
+		srm.setObj(agJobMenuGxService.getLoginMenuList());
+		returnData(response,srm);
+	}
+	/**
+	 * 获取医院列表
+	 * @param request
+	 * @param response
+	 * @param att_AgHospitalInfo
+	 * @param createDateStart
+	 * @param createDateEnd
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/hospitalList.htm")
+	public void hospitalList(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgHospitalInfo att_AgHospitalInfo,String createDateStart,String createDateEnd,String sort) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		 
+		agHospitalInfoService.setRequest(request);
+		//设置开始时间结束时间
+		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
+		if(createDateStart!=null && !createDateStart.trim().equals(""))
+			att_AgHospitalInfo.setCreateDate_start(sdf.parse(createDateStart));
+		if(createDateEnd!=null && !createDateEnd.trim().equals(""))
+			att_AgHospitalInfo.setCreateDate_end(sdf.parse(createDateEnd));
+		//设置like字段
+		att_AgHospitalInfo.setTab_like("name");
+		String latitude = att_AgHospitalInfo.getLatitude();
+		String longitude = att_AgHospitalInfo.getLongitude();
+		att_AgHospitalInfo.setLatitude(null);
+		att_AgHospitalInfo.setLongitude(null);
+		srm.setObj(agHospitalInfoService.getPagerModelObject(att_AgHospitalInfo,latitude,longitude,sort));
+		returnData(response,srm);
+	}
+	/**
+	 * 获取医院信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/hospitalInfo.htm")
+	public void hospitalInfo(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agHospitalInfoService.setRequest(request);
+		if(this.getUserType(request).equals("2")){
+			id=this.getLoginSysUserInfo(request).getSroleId();
+		}
+		SysRetrunMessage srm=agHospitalInfoService.findFormObject(id);
+		returnData(response,srm);
+	}
+	/**
+	 * 保存医院信息
+	 */
+	@RequestMapping(value = "/hospital/saveHospital.htm")
+	public void saveHospital(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgHospitalInfo att_AgHospitalInfo) throws Exception{
+		agHospitalInfoService.setRequest(request);
+		SysRetrunMessage srm=agHospitalInfoService.saveOrUpdateObject(att_AgHospitalInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 保存本地医院信息
+	 * @param request
+	 * @param response
+	 * @param address
+	 * @param provId
+	 * @param cityId
+	 * @param districtId
+	 * @param contactMobile
+	 * @param icon
+	 * @param introduction
+	 * @param trafficRoute
+	 * @param images
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveMyHospital.htm")
+	public void saveMyHospital(HttpServletRequest request ,HttpServletResponse response,String address,String provId,String cityId,String districtId,String contactMobile,String icon,String introduction,String trafficRoute,String images) throws Exception{
+		agHospitalInfoService.setRequest(request);
+		Integer id=this.getLoginSysUserInfo(request).getSroleId();
+		AgHospitalInfo att_AgHospitalInfo = agHospitalInfoService.findObject(id);
+		att_AgHospitalInfo.setAddress(address);
+		att_AgHospitalInfo.setProvId(provId);
+		att_AgHospitalInfo.setCityId(cityId);
+		att_AgHospitalInfo.setDistrictId(districtId);
+		att_AgHospitalInfo.setContactMobile(contactMobile);
+		att_AgHospitalInfo.setIcon(icon);
+		att_AgHospitalInfo.setIntroduction(introduction);
+		att_AgHospitalInfo.setTrafficRoute(trafficRoute);
+		att_AgHospitalInfo.setImages(images);
+		SysRetrunMessage srm=agHospitalInfoService.saveOrUpdateObject(att_AgHospitalInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取角色列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/roleList.htm")
+	public void roleList(HttpServletRequest request ,HttpServletResponse response) throws Exception{
+		agHospitalRoleService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm.setObj(agHospitalRoleService.getAgHospitalRoleList());
+		returnData(response,srm);
+	}
+	/**
+	 * 保存角色信息
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveRole.htm")
+	public void saveRole(HttpServletRequest request ,HttpServletResponse response,String name,Integer id) throws Exception{
+		agHospitalRoleService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		if(id !=null){
+			AgHospitalRole role = agHospitalRoleService.findObject(id);
+			if(role.getLocked().equals("1")){
+				srm.setCode(0l);
+				srm.setMeg("该角色不可修改");
+			}else{
+				role.setName(name);
+				srm =agHospitalRoleService.saveOrUpdateObject(role);
+			}
+		}else{
+			AgHospitalRole role = new AgHospitalRole();
+			role.setName(name);
+			srm = agHospitalRoleService.saveOrUpdateObject(role);
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 删除角色信息
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delRole.htm")
+	public void delRole(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agHospitalRoleService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm = agHospitalRoleService.deleteObject(id);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 获取岗位列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/jobList.htm")
+	public void jobList(HttpServletRequest request ,HttpServletResponse response,Integer roleId) throws Exception{
+		agHospitalJobService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm.setObj(agHospitalJobService.getAgHospitalJobListByRoleId(roleId));
+		returnData(response,srm);
+	}
+	/**
+	 * 保存岗位信息
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveJob.htm")
+	public void saveJob(HttpServletRequest request ,HttpServletResponse response,String name,Integer id,Integer roleId) throws Exception{
+		agHospitalJobService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		if(id !=null){
+			AgHospitalJob job = agHospitalJobService.findObject(id);
+			if(job.getLocked().equals("1")){
+				srm.setCode(0l);
+				srm.setMeg("该岗位不可修改");
+			}else{
+				job.setName(name);
+				job.setRoleId(roleId);
+				srm =agHospitalJobService.saveOrUpdateObject(job);
+			}
+		}else{
+			AgHospitalJob job = new AgHospitalJob();
+			job.setName(name);
+			job.setRoleId(roleId);
+			srm = agHospitalJobService.saveOrUpdateObject(job);
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 删除角色信息
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delJob.htm")
+	public void delJob(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agHospitalJobService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm = agHospitalJobService.deleteObject(id);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取岗位菜单列表
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/getJobMenuList.htm")
+	public void getJobMenuList(HttpServletRequest request ,HttpServletResponse response,int id) throws Exception{
+		agJobMenuGxService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm.setObj(agJobMenuGxService.getAgHospitalMenuGxList(id));
+		returnData(response,srm);
+	}
+	/**
+	 * 获取菜单列表
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/getMenuList.htm")
+	public void getMenuList(HttpServletRequest request ,HttpServletResponse response) throws Exception{
+		agJobMenuGxService.setRequest(request);
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		srm.setObj(agJobMenuGxService.getMenuListByJobId(null));
+		returnData(response,srm);
+	}
+	/**
+	 * 保存角色菜单
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveJobMenu.htm")
+	public void saveJobMenu(HttpServletRequest request ,HttpServletResponse response,Integer id,String menuIds) throws Exception{
+		agJobMenuGxService.setRequest(request);
+		SysRetrunMessage srm=agJobMenuGxService.saveAgHospitalMenuGxs(id, menuIds);
+		returnData(response,srm);
+	}
+	/**
+	 * 删除菜单
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delJobMenu.htm")
+	public void delJobMenu(HttpServletRequest request ,HttpServletResponse response,Integer jobTitleId,String menuIds) throws Exception{
+		agJobMenuGxService.setRequest(request);
+		SysRetrunMessage srm=agJobMenuGxService.deleteAgHospitalMenuGxs(jobTitleId,menuIds);
+		returnData(response,srm);
+	}
+	/**
+	 * 根据地址获取高德的经纬度信息
+	 * @param request
+	 * @param response
+	 * @param address
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/getLocation.htm")
+	public void getLocation(HttpServletRequest request ,HttpServletResponse response,String address) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		StringBuffer sb=HttpUtil.submitPost("https://restapi.amap.com/v3/geocode/geo", "key="+CommonUtil.GD_KEY+"&address="+address);
+		Map<String,Object> reMap=JsonUtil.getMap4Json(sb.toString());
+		if(reMap.get("status").toString().equals("1")){//查询成功
+			List<Map> geoMapList=(List<Map>) reMap.get("geocodes");
+			if(geoMapList!=null && geoMapList.size()>0){
+				Map<String,Object> geoMap = geoMapList.get(0);
+				String location = geoMap.get("location").toString();
+				String[] strArry = location.split(",");
+				Map<String,String> vmap = new HashMap<String,String>();
+				vmap.put("lng", strArry[0]);//经度
+				vmap.put("lat", strArry[1]);//纬度
+				srm.setObj(vmap);
+			}
+		}else{//查询失败
+			srm.setCode(0l);
+			srm.setMeg("查询失败！");
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 根据医生名称获取医院列表
+	 * @param request
+	 * @param response
+	 * @param provId
+	 * @param cityId
+	 * @param latitude
+	 * @param longitude
+	 * @param name
+	 * @param organizationType
+	 * @param medicalInsurance
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/docHospitalList.htm")
+	public void docHospitalList(HttpServletRequest request ,HttpServletResponse response,String provId,String cityId,String latitude,String longitude,String name,String organizationType,Integer medicalInsurance,String sort) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agHospitalInfoService.setRequest(request);
+		AgHospitalInfo att_AgHospitalInfo=new AgHospitalInfo();
+		att_AgHospitalInfo.setProvId(provId);
+		att_AgHospitalInfo.setCityId(cityId);
+		att_AgHospitalInfo.setOrganizationType(organizationType);
+		att_AgHospitalInfo.setMedicalInsurance(medicalInsurance);
+		srm.setObj(agHospitalInfoService.getPagerModelByDocName(att_AgHospitalInfo, name,latitude,longitude,sort));
+		returnData(response,srm);
+	}
+	/**
+	 * 根据科室名称获取医院列表
+	 * @param request
+	 * @param response
+	 * @param provId
+	 * @param cityId
+	 * @param latitude
+	 * @param longitude
+	 * @param name
+	 * @param organizationType
+	 * @param medicalInsurance
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/depHospitalList.htm")
+	public void depHospitalList(HttpServletRequest request ,HttpServletResponse response,String provId,String cityId,String latitude,String longitude,String name,String organizationType,Integer medicalInsurance,String sort) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agHospitalInfoService.setRequest(request);
+		AgHospitalInfo att_AgHospitalInfo=new AgHospitalInfo();
+		att_AgHospitalInfo.setProvId(provId);
+		att_AgHospitalInfo.setCityId(cityId);
+		att_AgHospitalInfo.setOrganizationType(organizationType);
+		att_AgHospitalInfo.setMedicalInsurance(medicalInsurance);
+		srm.setObj(agHospitalInfoService.getPagerModelByDepName(att_AgHospitalInfo, name,latitude,longitude,sort));
+		returnData(response,srm);
+	}
+	/**
+	 * APP排班列表查询
+	 * @param request
+	 * @param response
+	 * @param departmentId
+	 * @param doctorId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/appWorkInfoList.htm")
+	public void appWorkInfoList(HttpServletRequest request,HttpServletResponse response, Integer departmentId,Integer doctorId) throws Exception {
+		agWorkInfoService.setRequest(request); 
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgWorkView att_AgWorkView = new AgWorkView();
+		att_AgWorkView.setDepartmentId(departmentId);
+		att_AgWorkView.setDoctorId(doctorId);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) - 1);     
+		String searchStart = sdf.format(cal.getTime());
+		//2周后的今天
+		cal.setTime(now);
+		cal.add(cal.DATE,14);
+		String searchEnd = sdf.format(cal.getTime());
+		att_AgWorkView.setShiftEnd_start(searchStart);
+		att_AgWorkView.setShiftEnd_end(searchEnd);
+		List<AgWorkView> reList = agWorkInfoService.getAgWorkViewList(att_AgWorkView);
+		Map<String,Object> reMap= new HashMap<String,Object>();
+		reMap.put("plans", reList);
+		Map<String,Object> infoMap =  new HashMap<String,Object>();
+		if(reList != null && reList.size() >0){
+			AgWorkView agWorkView =reList.get(0);
+			infoMap.put("organizationId", agWorkView.getOrganizationId());
+			infoMap.put("departmentName", agWorkView.getDepartmentName());
+			infoMap.put("organizationName", agWorkView.getOrganizationName());
+			infoMap.put("doctorName", agWorkView.getDoctorName());
+			infoMap.put("actualCount", agWorkView.getActualCount());
+			infoMap.put("planCount", agWorkView.getPlanCount());
+		}
+		reMap.put("info", infoMap);
+		srm.setObj(reMap);
+		returnData(response,srm);
+	}
+	
+	
+}

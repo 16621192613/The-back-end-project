@@ -1,0 +1,447 @@
+package com.hsk.angeldoctor.web.finance.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hsk.angeldoctor.api.persistence.AgAgentInfo;
+import com.hsk.angeldoctor.api.persistence.AgBusinessView;
+import com.hsk.angeldoctor.api.persistence.AgDealCountView;
+import com.hsk.angeldoctor.api.persistence.AgHospitalView;
+import com.hsk.angeldoctor.api.persistence.AgMaidOrView;
+import com.hsk.angeldoctor.api.persistence.AgMaidView;
+import com.hsk.angeldoctor.api.persistence.AgMoneyCount;
+import com.hsk.angeldoctor.api.persistence.AgPatientView;
+import com.hsk.angeldoctor.api.persistence.AgWithdrawInfo;
+import com.hsk.angeldoctor.web.agent.service.IAgAgentInfoService;
+import com.hsk.angeldoctor.web.agent.service.IAgBusinessUserService;
+import com.hsk.angeldoctor.web.agent.service.IAgMaidInfoService;
+import com.hsk.angeldoctor.web.agent.service.IAgWithdrawInfoService;
+import com.hsk.angeldoctor.web.integral.service.IAgIntegralInfoService;
+import com.hsk.angeldoctor.web.order.service.IAgMoneyCountService;
+import com.hsk.supper.dto.SystemContext;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.controller.imp.DSTController;
+import com.hsk.xframe.api.persistence.SysUserInfo;
+/**
+ * 财务统计 接口
+ * @author xun
+ * @version v.10
+ */
+@Controller
+public class FinanceController  extends DSTController{
+	
+	/**
+	 * 分佣业务
+	 */
+	@Autowired
+	private IAgMaidInfoService agMaidInfoService;
+	/**
+	 * 余额业务类 
+	 */
+	@Autowired
+	private	IAgMoneyCountService agMoneyCountService;
+	@Autowired
+	private IAgIntegralInfoService agIntegralInfoService;
+	
+	/**
+	 * 提现申请业务
+	 */
+	@Autowired
+	private IAgWithdrawInfoService agWithdrawInfoService;
+	@Autowired
+	private IAgAgentInfoService agAgentInfoService;
+	@Autowired
+	private IAgBusinessUserService agBusinessUserService;
+	
+	
+	/**
+	 * 获取账户余额 ,从toke中获取 用户id 和用户类型，查询该账户的余额信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getBalance.htm")
+	public void GetBalance(HttpServletRequest request,
+			HttpServletResponse response ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);
+		SysUserInfo sui=this.getLoginSysUserInfo(request);
+		Integer userType=sui.getUserType();
+		AgMoneyCount att_AgMoneyCount=new AgMoneyCount ();
+		att_AgMoneyCount.setSuiId(sui.getSroleId());
+		if(userType==5){
+			att_AgMoneyCount.setAmcType("3");
+		}
+		
+		srm=agMoneyCountService.findCountObject(att_AgMoneyCount);
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 根据登录的医院信息获取所有财务信息(根据toke中获取用户信息)
+	 * @param request
+	 * @param response
+	 * 
+	  * @param att_AgMaidView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getMyHosList.htm")
+	public void GetMyHosList(HttpServletRequest request,
+			HttpServletResponse response ,@ModelAttribute AgDealCountView att_AgDealCountView ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMaidInfoService.setRequest(request);
+		srm.setObj( agMaidInfoService.getPagerModelAgDealCountView(att_AgDealCountView) ); 
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 获取医院交易明细
+	 * @param request
+	 * @param response
+	 * @param att_AgMaidView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getHosList.htm")
+	public void GetHosList(HttpServletRequest request,
+			HttpServletResponse response,@ModelAttribute AgDealCountView att_AgDealCountView ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMaidInfoService.setRequest(request); 
+		srm.setObj( agMaidInfoService.getPagerModelAgDealCountView(att_AgDealCountView)); 
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 获取导医交易明细
+	 * @param request
+	 * @param response
+	 * @param att_AgMaidView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAngelList.htm")
+	public void GetAngelList(HttpServletRequest request,
+			HttpServletResponse response ,@ModelAttribute AgMaidOrView att_AgMaidOrView ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMaidInfoService.setRequest(request); 
+		SysUserInfo sui=this.getLoginSysUserInfo(request);
+		Integer userType=sui.getUserType();
+		if("4".equals(userType.toString())){ 
+			att_AgMaidOrView.setAaiId(sui.getSroleId());
+		} 
+		srm.setObj( agMaidInfoService.getPagerModelAgMaidOrView(att_AgMaidOrView) ); 
+		returnData(response, srm);
+	}
+	
+	
+	/**
+	 * 获取平台交易明细
+	 * @param request
+	 * @param response
+	 * @param att_AgWithdrawInfo
+	 * @param createDateStart
+	 * @param createDateEnd
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getPlatformList.htm")
+	public void GetPlatformList(HttpServletRequest request,
+			HttpServletResponse response ,@ModelAttribute AgWithdrawInfo att_AgWithdrawInfo,
+			String createDateStart,String createDateEnd 
+			) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWithdrawInfoService.setRequest(request);  
+		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
+		if(createDateStart!=null && !createDateStart.trim().equals(""))
+			att_AgWithdrawInfo.setCreateDate_start(sdf.parse(createDateStart));
+		if(createDateEnd!=null && !createDateEnd.trim().equals(""))
+			att_AgWithdrawInfo.setCreateDate_end(sdf.parse(createDateEnd));
+		srm.setObj( agWithdrawInfoService.getPagerModelObject(att_AgWithdrawInfo) ); 
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 获取医院账户汇总列表
+	 * @param request
+	 * @param response
+	 * @param att_AgHospitalView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getHosCountList.htm")
+	public void GetHosCountList(HttpServletRequest request,
+			HttpServletResponse response ,@ModelAttribute AgHospitalView att_AgHospitalView
+			 
+			) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  
+		 
+		srm.setObj( agMoneyCountService.getPagerModelAgHospitalView(att_AgHospitalView) ); 
+		returnData(response, srm);
+	}
+	/**
+	 * 获取业务账户汇总
+	 * @param request
+	 * @param response
+	 * @param att_AgBusinessView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAngelCountList.htm")
+	public void getAngelCountList(HttpServletRequest request,
+			HttpServletResponse response ,@ModelAttribute AgBusinessView att_AgBusinessView
+			 
+			) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  
+		 
+		srm.setObj( agMoneyCountService.getPagerModelAgBusinessView(att_AgBusinessView)); 
+		returnData(response, srm);
+	}
+	/**
+	 * 获取患者账户汇总
+	 * @param request
+	 * @param response
+	 * @param att_AgPatientView
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getPatientCountList.htm")
+	public void getPatientCountList(HttpServletRequest request,
+			HttpServletResponse response ,@ModelAttribute AgPatientView att_AgPatientView			 
+			) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  		 
+		srm.setObj( agMoneyCountService.getPagerModelAgPatientView(att_AgPatientView) ); 
+		returnData(response, srm);
+	}
+	/**
+	 * 代理商账号 汇总
+	 * @param request
+	 * @param response
+	 * @param att_AgentCount
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAgentCountList.htm")
+	public void getAgentCountList(HttpServletRequest request,HttpServletResponse response ,String serialNumber,String createDateStart,String createDateEnd) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMaidInfoService.setRequest(request); 
+		
+		SysUserInfo sui=this.getLoginSysUserInfo(request);
+		AgAgentInfo agAgentInfo = agAgentInfoService.findObject(sui.getSroleId());
+		AgMaidOrView att_AgMaidOrView = new AgMaidOrView();
+		att_AgMaidOrView.setShareTopReservedAgentId(sui.getSroleId());
+		att_AgMaidOrView.setSerialNumber(serialNumber);
+		att_AgMaidOrView.setCreateDateStart(createDateStart);
+		att_AgMaidOrView.setCreateDateEnd(createDateEnd);
+		PagerModel pm = new PagerModel();
+		PagerModel pm2 = agMaidInfoService.getPagerModelAgMaidOrView(att_AgMaidOrView);
+		List<Map<String,Object>> reList = new ArrayList<Map<String,Object>>();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		if(pm2.getRows() !=null && pm2.getRows().size() >0){
+			for(Object obj : pm2.getRows()){
+				Map<String,Object> reMap = new HashMap<String,Object>();
+				AgMaidOrView or = (AgMaidOrView) obj;
+				reMap.put("serialNumber", or.getSerialNumber());
+				reMap.put("createDate", or.getCreateDate()!=null?sdf.format(or.getCreateDate()):"");
+				reMap.put("shareTopReservedAgentAmount", or.getShareTopReservedAgentAmount());
+				reMap.put("reservedSharePercent", or.getReservedSharePercent());
+				reMap.put("shareTopReservedAgentName", agAgentInfo.getReservedRelateToTeamName());
+				reMap.put("reservedRelateTo", agAgentInfo.getReservedRelateTo());
+				reList.add(reMap);
+			}
+		}
+		pm.setItems(reList);
+		pm.setRows(reList);
+		pm.setTotal(pm2.getTotal());
+		pm.setTotalCount(pm2.getTotalCount());
+		srm.setObj(pm); 
+		returnData(response, srm); 
+	}
+	
+	
+	/**
+	 * 获取业务员账单列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAgentBillList.htm")
+	public void getAgentBillList(HttpServletRequest request,
+			HttpServletResponse response  ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  		 
+		SysUserInfo sui=this.getLoginSysUserInfo(request);
+		if(sui.getUserType()==5){
+			srm.setObj( agMoneyCountService.getListAgentBill(sui.getSroleId())); 
+		} else {
+			srm.setCode(0l);
+			srm.setMeg("未查询到业务员id！");
+		}
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 获取单笔补贴详情
+	 * @param request
+	 * @param response
+	 * @param att_AgWithdrawMaidInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getSubsidyInfo.htm")
+	public void GetSubsidyInfo(HttpServletRequest request,
+			HttpServletResponse response ,Integer transactionId,String isFirstAgent ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  		 
+		srm.setObj( agMoneyCountService.getSubsidyInfo(transactionId)); 
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 获取单笔提现详情
+	 * @param request
+	 * @param response
+	 * @param withdrawId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getWithdrawInfo.htm")
+	public void GetSubsidyInfo(HttpServletRequest request,
+			HttpServletResponse response ,Integer  	withdrawId ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  		 
+		srm.setObj( agMoneyCountService.getListAgentBill(withdrawId));  
+		returnData(response, srm);
+	}
+	/**
+	 * 获取业务员统计信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAgentBussCount.htm")
+	public void getAgentBussCount(HttpServletRequest request,
+			HttpServletResponse response ,Integer agentId) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agIntegralInfoService.setRequest(request);  		 
+		srm = agIntegralInfoService.getAgentBussCount(agentId);
+		returnData(response, srm);
+	}
+	/**
+	 * 获取代理商统计信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAgentCount.htm")
+	public void getAgentCount(HttpServletRequest request,HttpServletResponse response)throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  
+		SysUserInfo sui=this.getLoginSysUserInfo(request);
+		srm=agMoneyCountService.getAgentCount(sui.getSroleId());
+		returnData(response, srm);
+	}
+	/**
+	 * 获取平台统计信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getTranCount.htm")
+	public void getTranCount(HttpServletRequest request,HttpServletResponse response)throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  
+		srm=agMoneyCountService.getTranCount();
+		returnData(response, srm);
+	}
+	/**
+	 * 获取登陆医院的统计信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getHosCount.htm")
+	public void getHosCount(HttpServletRequest request,HttpServletResponse response)throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agMoneyCountService.setRequest(request);  
+		srm=agMoneyCountService.getHosCount();
+		returnData(response, srm);
+	}
+	/**
+	 * 获取业绩管理列表
+	 * @param request
+	 * @param response
+	 * @param reservedProvId
+	 * @param reservedCityId
+	 * @param reservedRelateToTeamName
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAchievementList.htm")
+	public void getAchievementList(HttpServletRequest request,
+			HttpServletResponse response,String reservedProvId,String reservedCityId,String reservedRelateToTeamName) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agAgentInfoService.setRequest(request);  		 
+		srm.setObj(agAgentInfoService.getAchievementPager(reservedProvId, reservedCityId, reservedRelateToTeamName));
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 查看单个代理商的业绩统计
+	 * @param request
+	 * @param response
+	 * @param reservedProvId
+	 * @param reservedCityId
+	 * @param reservedRelateToTeamName
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getAchievementInfo.htm")
+	public void getAchievementInfo(HttpServletRequest request,
+			HttpServletResponse response,Integer id,String filterKey,String filterStartDate,String filterEndDate) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agAgentInfoService.setRequest(request);  		 
+		srm.setObj(agAgentInfoService.getOneAchievementPager(id, filterKey, filterStartDate, filterEndDate));
+		returnData(response, srm);
+	}
+	/**
+	 * 代理商--员工业绩统计
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param mobile
+	 * @param filterKey
+	 * @param filterStartDate
+	 * @param filterEndDate
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getBusinessCount.htm")
+	public void getBusinessCount(HttpServletRequest request,
+			HttpServletResponse response,String name,String mobile,String filterKey,String filterStartDate,String filterEndDate,Integer belongingId) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agBusinessUserService.setRequest(request);  		 
+		srm.setObj(agBusinessUserService.getBusinessCount(name, mobile, filterKey, filterStartDate, filterEndDate,belongingId));
+		returnData(response, srm);
+	}
+	/**
+	 * 代理商--下线业务统计
+	 * @param request
+	 * @param response
+	 * @param name
+	 * @param mobile
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/finance/getDirectBusinessCount.htm")
+	public void getDirectBusinessCount(HttpServletRequest request,HttpServletResponse response,String name,String mobile) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agBusinessUserService.setRequest(request);  		 
+		srm.setObj(agBusinessUserService.getDirectBusinessCount(name, mobile));
+		returnData(response, srm);
+	}
+	
+	
+
+}

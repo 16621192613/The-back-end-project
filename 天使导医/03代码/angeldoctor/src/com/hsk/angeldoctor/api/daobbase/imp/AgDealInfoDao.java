@@ -1,0 +1,414 @@
+package com.hsk.angeldoctor.api.daobbase.imp;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
+import com.hsk.supper.dto.comm.PagerModel;
+import org.springframework.stereotype.*;
+import com.hsk.exception.HSKDBException;
+import com.hsk.supper.dao.imp.SupperDao;
+import com.hsk.angeldoctor.api.daobbase.*;
+import com.hsk.angeldoctor.api.persistence.*;
+
+/** 
+ * ag_deal_info表数据库层面操作实现类 
+ * @author  作者:admin
+ * @version  版本信息:v1.0   创建时间: 2018-08-14 13:35:36
+ */
+@Component
+public class  AgDealInfoDao extends SupperDao implements IAgDealInfoDao {	
+
+	/**
+	 * 根据ag_deal_info表主键查找AgDealInfo对象记录
+	 * 
+	 * @param  AdiId  Integer类型(ag_deal_info表主键)
+	 * @return AgDealInfo ag_deal_info表记录
+	 * @throws HSKDBException
+	 */	
+	public AgDealInfo findAgDealInfoById(Integer AdiId) throws HSKDBException{
+				AgDealInfo  att_AgDealInfo=new AgDealInfo();				
+				if(AdiId!=null){
+					att_AgDealInfo.setAdiId(AdiId);	
+				    Object obj=	this.getOne(att_AgDealInfo);
+					if(obj!=null){
+						att_AgDealInfo=(AgDealInfo) obj;
+					}
+				}
+				return  att_AgDealInfo;
+	}
+	 /**
+	  * 根据ag_deal_info表主键删除AgDealInfo对象记录
+	  * @param  AdiId  Integer类型(ag_deal_info表主键)
+	  * @throws HSKDBException
+	  */
+	public void deleteAgDealInfoById(Integer AdiId) throws HSKDBException{ 
+		 AgDealInfo  att_AgDealInfo=new AgDealInfo();	
+		  if(AdiId!=null){
+					  att_AgDealInfo.setAdiId(AdiId);
+				  	  Object obj=	this.getOne(att_AgDealInfo);
+					  if(obj!=null){
+							this.deleteObject(obj); 
+					  }
+			}
+	}
+
+	/**
+ 	 * 根据ag_deal_info表主键修改AgDealInfo对象记录
+     * @param  AdiId  Integer类型(ag_deal_info表主键)
+     * @param  att_AgDealInfo  AgDealInfo类型(ag_deal_info表记录)
+     * @return AgDealInfo  修改后的AgDealInfo对象记录
+	 * @throws HSKDBException
+	 */
+	public  AgDealInfo updateAgDealInfoById(Integer AdiId,AgDealInfo att_AgDealInfo) throws HSKDBException{
+		  if(AdiId!=null){
+					att_AgDealInfo.setAdiId(AdiId);
+				   	Object obj=	this.getOne(att_AgDealInfo);
+					if(obj!=null){							 
+							this.updateObject(obj);
+					}
+			}
+			return  att_AgDealInfo;
+	}
+	
+	/**
+	 * 新增ag_deal_info表 记录
+     * @param  att_AgDealInfo  AgDealInfo类型(ag_deal_info表记录)
+	 * @throws HSKDBException
+	 */
+	public Integer saveAgDealInfo(AgDealInfo att_AgDealInfo) throws HSKDBException{
+		 return this.newObject(att_AgDealInfo);
+	} 
+		
+	/**
+	 * 新增或修改ag_deal_info表记录 ,如果ag_deal_info表主键AgDealInfo.AdiId为空就是添加，如果非空就是修改
+     * @param  att_AgDealInfo  AgDealInfo类型(ag_deal_info表记录)
+	 * @throws HSKDBException
+	 */
+	public  AgDealInfo saveOrUpdateAgDealInfo(AgDealInfo att_AgDealInfo) throws HSKDBException{
+		  this.getHibernateTemplate().saveOrUpdate(att_AgDealInfo);
+		  return att_AgDealInfo;
+	}
+	
+	/**
+	 *根据AgDealInfo对象作为对(ag_deal_info表进行查询，获取列表对象
+     * @param  att_AgDealInfo  AgDealInfo类型(ag_deal_info表记录)
+     * @return List<AgDealInfo>  列表对象
+	 * @throws HSKDBException 
+	 */
+	 @SuppressWarnings("unchecked")
+	public List<AgDealInfo> getListByAgDealInfo(AgDealInfo att_AgDealInfo) throws HSKDBException{
+		String Hql=this.getHql( att_AgDealInfo); 
+		List<AgDealInfo> list=this.getHibernateTemplate().find(Hql);
+		return  list;
+	}
+	/**
+	 *根据AgDealInfo对象作为对(ag_deal_info表进行查询，获取分页对象
+     * @param  att_AgDealInfo  AgDealInfo类型(ag_deal_info表记录)
+     * @return List<AgDealInfo>  分页对象
+	 * @throws HSKDBException 
+	 */
+	public PagerModel getPagerModelByAgDealInfo(AgDealInfo att_AgDealInfo)
+			throws HSKDBException {
+		String Hql=this.getHql(att_AgDealInfo);
+		return this.getHibernateDao().findByPage(Hql); 
+	} 
+	/**
+	 * 根据AgDealInfo对象获取Hql字符串
+     * @param  att_AgDealInfo  AgDealInfo类型(ag_deal_info表记录)
+	 *  @return hql字符串
+	 */
+	private String  getHql(AgDealInfo att_AgDealInfo){
+			 StringBuffer sbuffer = new StringBuffer( " from  AgDealInfo  where  1=1  ");
+			 String likeStr=  att_AgDealInfo.getTab_like();
+			 String orderStr= att_AgDealInfo.getTab_order();
+			 
+			 //*****************无关字段处理begin*****************
+						   		 //处理in条件 诊疗ID(adiId)
+							     if(att_AgDealInfo.getAdiId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getAdiId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getAdiId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  adiId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  adiId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 预约ID(aoiId)
+							     if(att_AgDealInfo.getAoiId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getAoiId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getAoiId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  aoiId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  aoiId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 医院ID(organizationId)
+							     if(att_AgDealInfo.getOrganizationId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getOrganizationId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getOrganizationId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  organizationId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  organizationId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 业务员ID(abuId)
+							     if(att_AgDealInfo.getAbuId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getAbuId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getAbuId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  abuId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  abuId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 医生ID(doctorId)
+							     if(att_AgDealInfo.getDoctorId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getDoctorId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getDoctorId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  doctorId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  doctorId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 科室ID(departmentId)
+							     if(att_AgDealInfo.getDepartmentId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getDepartmentId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getDepartmentId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  departmentId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  departmentId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 患者ID(patientId)
+							     if(att_AgDealInfo.getPatientId_str()!=null&&
+						   		    !"".equals(att_AgDealInfo.getPatientId_str().trim())){ 
+											 String  intStr=att_AgDealInfo.getPatientId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  patientId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  patientId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+							     SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+							 		//时间类型开始条件处理  创建时间(createDate)
+								  if(att_AgDealInfo.getCreateDate_start()!=null){
+							   	    	sbuffer.append( " and  createDate >='" +sdf.format(att_AgDealInfo.getCreateDate_start())+" 00:00:00'" );  
+									 }
+							 	  //时间类型结束条件处理 创建时间(createDate)
+								 	if(att_AgDealInfo.getCreateDate_end()!=null){
+					   	      			sbuffer.append( " and  createDate<='" +sdf.format(att_AgDealInfo.getCreateDate_end())+" 23:59:59'" );  
+							  	     } 
+								 		//时间类型开始条件处理  修改时间(editDate)
+									  if(att_AgDealInfo.getEditDate_start()!=null){
+								   	    	sbuffer.append( " and  editDate<='" +att_AgDealInfo.getEditDate_start()+"'" );  
+										 }
+								 	  //时间类型结束条件处理 修改时间(editDate)
+									 	if(att_AgDealInfo.getEditDate_end()!=null){
+						   	      			sbuffer.append( " and  editDate>'" +att_AgDealInfo.getEditDate_end()+"'" );  
+								  	     } 
+			 //*****************无关字段处理end*****************
+			 //*****************数据库字段处理begin*************
+								  		//诊疗ID(adiId)
+					 					if(att_AgDealInfo.getAdiId()!=null){
+											 sbuffer.append( " and adiId=" +att_AgDealInfo.getAdiId() );
+										 }
+								  		//预约ID(aoiId)
+					 					if(att_AgDealInfo.getAoiId()!=null){
+											 sbuffer.append( " and aoiId=" +att_AgDealInfo.getAoiId() );
+										 }
+								  		//医院ID(organizationId)
+					 					if(att_AgDealInfo.getOrganizationId()!=null){
+											 sbuffer.append( " and organizationId=" +att_AgDealInfo.getOrganizationId() );
+										 }
+								  		//业务员ID(abuId)
+					 					if(att_AgDealInfo.getAbuId()!=null){
+											 sbuffer.append( " and abuId=" +att_AgDealInfo.getAbuId() );
+										 }
+								  		//医生ID(doctorId)
+					 					if(att_AgDealInfo.getDoctorId()!=null){
+											 sbuffer.append( " and doctorId=" +att_AgDealInfo.getDoctorId() );
+										 }
+								  		//科室ID(departmentId)
+					 					if(att_AgDealInfo.getDepartmentId()!=null){
+											 sbuffer.append( " and departmentId=" +att_AgDealInfo.getDepartmentId() );
+										 }
+								  		//患者ID(patientId)
+					 					if(att_AgDealInfo.getPatientId()!=null){
+											 sbuffer.append( " and patientId=" +att_AgDealInfo.getPatientId() );
+										 }
+					       				//备注(comment)		 					 
+									 if(att_AgDealInfo.getComment()!=null&&
+									  !"".equals(att_AgDealInfo.getComment().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("comment")!=-1){
+											  sbuffer.append( " and comment  like '%"+att_AgDealInfo.getComment()+"%'"   );
+										  }else {
+											  sbuffer.append( " and comment   ='"+att_AgDealInfo.getComment()+"'"   );
+										  }
+									 }
+					       				//状态:1正常，2禁用(status)		 					 
+									 if(att_AgDealInfo.getStatus()!=null&&
+									  !"".equals(att_AgDealInfo.getStatus().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("status")!=-1){
+											  sbuffer.append( " and status  like '%"+att_AgDealInfo.getStatus()+"%'"   );
+										  }else {
+											  sbuffer.append( " and status   ='"+att_AgDealInfo.getStatus()+"'"   );
+										  }
+									 }
+					       				//创建人(createRen)		 					 
+									 if(att_AgDealInfo.getCreateRen()!=null&&
+									  !"".equals(att_AgDealInfo.getCreateRen().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("createRen")!=-1){
+											  sbuffer.append( " and createRen  like '%"+att_AgDealInfo.getCreateRen()+"%'"   );
+										  }else {
+											  sbuffer.append( " and createRen   ='"+att_AgDealInfo.getCreateRen()+"'"   );
+										  }
+									 }
+						   				//创建时间(createDate)
+						 				if(att_AgDealInfo.getCreateDate()!=null){
+						   	                   sbuffer.append( " and  createDate='" +att_AgDealInfo.getCreateDate()+"'" );  
+								  		}
+					       				//修改人(editRen)		 					 
+									 if(att_AgDealInfo.getEditRen()!=null&&
+									  !"".equals(att_AgDealInfo.getEditRen().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("editRen")!=-1){
+											  sbuffer.append( " and editRen  like '%"+att_AgDealInfo.getEditRen()+"%'"   );
+										  }else {
+											  sbuffer.append( " and editRen   ='"+att_AgDealInfo.getEditRen()+"'"   );
+										  }
+									 }
+						   				//修改时间(editDate)
+						 				if(att_AgDealInfo.getEditDate()!=null){
+						   	                   sbuffer.append( " and  editDate='" +att_AgDealInfo.getEditDate()+"'" );  
+								  		}
+			 //*****************数据库字段处理end***************
+			  		if(orderStr!=null&&!"".equals(orderStr.trim())){
+									 sbuffer.append( " order by "+orderStr);
+						 }
+						 /*
+						 else {
+							  sbuffer.append( " order by  AdiId   desc " );
+					      }
+					      */
+			 
+			 return  sbuffer.toString();
+	}
+	
+	@Override
+	public PagerModel getPagerAgDealView(AgDealView agDealView) throws HSKDBException {
+		String hql ="from AgDealView where 1=1";
+		if(agDealView.getRegisterType()!=null && !agDealView.getRegisterType().trim().equals(""))
+			hql +=" and registerType='"+agDealView.getRegisterType().trim()+"'";
+		if(agDealView.getAgentId()!=null )
+			hql +=" and agentId='"+agDealView.getAgentId()+"'";
+		if(agDealView.getOrganizationId()!=null )
+			hql +=" and organizationId='"+agDealView.getOrganizationId()+"'";
+		if(agDealView.getOutpatientStatus() != null && !agDealView.getOutpatientStatus().trim().equals(""))
+			hql+=" and outpatientStatus = '"+agDealView.getOutpatientStatus().trim()+"'";
+		if(agDealView.getRegisterStatus() != null && !agDealView.getRegisterStatus().trim().equals(""))
+			hql+=" and registerStatus = '"+agDealView.getRegisterStatus().trim()+"'";
+		if(agDealView.getPatientId()!=null)
+			hql +=" and patientId="+agDealView.getPatientId();
+		return this.getHibernateDao().findByPage(hql); 
+	}
+	@Override
+	public AgDealView getAgDealViewById(Integer aoiId) throws HSKDBException {
+		AgDealView  att_AgDealView=new AgDealView();				
+		if(aoiId!=null){
+			att_AgDealView.setRegistrationId(aoiId);	
+		    Object obj=	this.getOne(att_AgDealView);
+			if(obj!=null){
+				att_AgDealView=(AgDealView) obj;
+			}
+		}
+		return  att_AgDealView;
+	}
+	@Override
+	public List<AgDealView> getAgDealViewList(AgDealView agDealView) throws HSKDBException {
+		String hql ="from AgDealView where 1=1";
+		if(agDealView.getRegisterType()!=null && !agDealView.getRegisterType().trim().equals(""))
+			hql +=" and registerType='"+agDealView.getRegisterType().trim()+"'";
+		if(agDealView.getAgentId()!=null )
+			hql +=" and agentId='"+agDealView.getAgentId()+"'";
+		if(agDealView.getOutpatientStatus() != null && !agDealView.getOutpatientStatus().trim().equals(""))
+			hql+=" and outpatientStatus = '"+agDealView.getOutpatientStatus().trim()+"'";
+		if(agDealView.getRegisterStatus() != null && !agDealView.getRegisterStatus().trim().equals(""))
+			hql+=" and registerStatus = '"+agDealView.getRegisterStatus().trim()+"'";
+		if(agDealView.getPatientId()!=null)
+			hql +=" and patientId="+agDealView.getPatientId();
+		List<AgDealView> list=this.getHibernateTemplate().find(hql);
+		return  list;
+	}
+}

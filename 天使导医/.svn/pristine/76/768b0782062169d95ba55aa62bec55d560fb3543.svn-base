@@ -1,0 +1,516 @@
+package com.hsk.angeldoctor.web.hospital.service.imp;
+
+import java.util.*;
+import org.springframework.stereotype.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.hsk.supper.dto.SystemContext;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.daobbase.ISysUserInfoDao;
+import com.hsk.xframe.api.im.IMUtile;
+import com.hsk.xframe.api.persistence.SysUserInfo;
+import com.hsk.xframe.api.service.imp.DSTService;
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+import com.hsk.xframe.api.utils.freeMarker.amap.AMapUtils;
+import com.hsk.xframe.api.utils.freeMarker.amap.LngLat;
+import com.hsk.exception.HSKDBException;
+import com.hsk.exception.HSKException;
+import com.hsk.angeldoctor.web.hospital.service.*;
+import com.hsk.angeldoctor.api.persistence.*;
+import com.hsk.angeldoctor.api.daobbase.*;
+
+
+/** 
+  hospital业务操作实现类 
+ * @author  作者:admin
+ * @version  版本信息:v1.0   创建时间: 2018-08-14 13:28:00
+ */
+ 
+@Service
+public class  AgHospitalInfoService extends DSTService implements IAgHospitalInfoService {	
+   /**
+   *业务处理dao类  agHospitalInfoDao 
+   */
+	@Autowired
+	protected IAgHospitalInfoDao agHospitalInfoDao;
+	@Autowired
+	private ISysUserInfoDao sysUserInfoDao;
+	@Autowired
+	protected IAgDoctorInfoDao agDoctorInfoDao;
+	@Autowired
+	protected IAgDepartmentInfoDao agDepartmentInfoDao;
+	@Autowired
+	protected IAgHospitalJobDao agHospitalJobDao;
+	@Autowired
+	protected IAgHospitalRoleDao agHospitalRoleDao;
+	@Autowired
+	protected IAgHospitalMenuDao agHospitalMenuDao;
+	@Autowired
+	protected IAgCollectionHospitalDao agCollectionHospitalDao;
+	
+ /**
+	 * 根据ag_hospital_info表主键删除AgHospitalInfo对象记录
+     * @param  organizationId  Integer类型(ag_hospital_info表主键)
+	 * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+
+	public SysRetrunMessage findFormObject(Integer organizationId) throws HSKException{
+	        SysRetrunMessage srm=new SysRetrunMessage(1l);
+			  	
+			try{
+		   			AgHospitalInfo     att_AgHospitalInfo= agHospitalInfoDao.findAgHospitalInfoById( organizationId) ;
+		   			if(this.getUserType()!=null && this.getUserType()==5){//
+		   				AgCollectionHospital agCollectionHospital = new AgCollectionHospital();
+		   				agCollectionHospital.setSuiId(this.GetOneSessionAccount().getSroleId());
+		   				agCollectionHospital.setOrganizationId(organizationId);
+		   				agCollectionHospital = (AgCollectionHospital) this.getOne(agCollectionHospital);
+				  		if(agCollectionHospital!=null && agCollectionHospital.getMchId()!=null)
+				  			att_AgHospitalInfo.setIsColl("1");//已收藏
+				  		else
+				  			att_AgHospitalInfo.setIsColl("2");//未收藏
+					}else if(this.getUserType()==null){//如果时微信用户，需要查询当前在线的的医生
+						AgDoctorInfo att_AgDoctorInfo = new AgDoctorInfo();
+						att_AgDoctorInfo.setOrganizationId(att_AgHospitalInfo.getOrganizationId());
+						att_AgDoctorInfo.setStatus("0");
+						List<AgDoctorInfo> docList = agDoctorInfoDao.getListByAgDoctorInfo(att_AgDoctorInfo);
+						if(docList!=null && docList.size() >0){
+							IMUtile iMUtile = new IMUtile();
+							for(AgDoctorInfo docInfo : docList){
+								boolean isOnLine = iMUtile.getIMUserStatus(CommonUtil.IM_DOC_PRE+docInfo.getDoctorId());
+								if(isOnLine){
+									att_AgHospitalInfo.setEasemobCustomerServiceUsername(CommonUtil.IM_DOC_PRE+docInfo.getDoctorId());
+									break;
+								}
+							}
+						}
+					}
+					srm.setObj(att_AgHospitalInfo);
+				} catch (HSKDBException e) {
+					e.printStackTrace(); 
+					srm.setCode(0l);
+					srm.setMeg(e.getMessage()); 
+				}
+				 return srm ;
+	} 
+
+    /**
+	 * 根据ag_hospital_info表主键删除AgHospitalInfo对象记录
+     * @param  organizationId  Integer类型(ag_hospital_info表主键)
+	 * @throws HSKException
+	 */
+
+	public AgHospitalInfo findObject(Integer organizationId) throws HSKException{
+			AgHospitalInfo  att_AgHospitalInfo=new AgHospitalInfo();		
+			try{
+		        att_AgHospitalInfo= agHospitalInfoDao.findAgHospitalInfoById( organizationId) ;
+				} catch (HSKDBException e) {
+					e.printStackTrace(); 
+					throw new  HSKException(e);
+				}
+				return  att_AgHospitalInfo;
+	}
+	
+	 
+	 /**
+	 * 根据ag_hospital_info表主键删除AgHospitalInfo对象记录
+     * @param  organizationId  Integer类型(ag_hospital_info表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteObject(Integer organizationId) throws HSKException{  
+		    SysRetrunMessage srm=new SysRetrunMessage(1l);
+		   try{ 
+				agHospitalInfoDao.deleteAgHospitalInfoById(organizationId);
+			 } catch (Exception e) {
+					e.printStackTrace(); 
+					throw new  HSKException(e);
+		     }
+		   return srm;  
+	}
+	
+	/**
+	 * 根据ag_hospital_info表主键删除多条AgHospitalInfo对象记录
+     * @param  OrganizationIds  Integer类型(ag_hospital_info表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteAllObject(String organizationIds) throws HSKException{
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try {
+			String[] ids = organizationIds.split(",");
+			for (String did : ids) {
+				if (did != null && !"".equals(did.trim())) {
+					agHospitalInfoDao.deleteAgHospitalInfoById(Integer
+							.valueOf(did));
+				}
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			HSKException hse = new HSKException(e);
+			hse.setDisposeType("01");
+			throw hse;
+		} catch (HSKDBException e) {
+			e.printStackTrace();
+			throw new HSKException(e);
+		}
+		return srm;	  
+	 }
+	 
+ 
+	 /**
+	 * 新增或修改ag_hospital_info表记录 ,如果ag_hospital_info表主键AgHospitalInfo.OrganizationId为空就是添加，如果非空就是修改
+     * @param  att_AgHospitalInfo  AgHospitalInfo类型(ag_hospital_info表记录)
+     * @return AgHospitalInfo  修改后的AgHospitalInfo对象记录
+	 * @throws HSKDBException
+	 */
+	public SysRetrunMessage saveOrUpdateObject( AgHospitalInfo att_AgHospitalInfo) throws HSKException{
+			 SysRetrunMessage srm = new SysRetrunMessage(1l);
+			  try{
+				  	
+				  	if(att_AgHospitalInfo.getOrganizationId()==null){
+				  		//检查账号是否存在
+				  		SysUserInfo checkUser = new SysUserInfo();
+				  		checkUser.setState(1);
+				  		checkUser.setAccount(att_AgHospitalInfo.getInitialUsername());
+				  		checkUser.setBarCodeFileCode(att_AgHospitalInfo.getDomainName());//域名
+				  		checkUser = sysUserInfoDao.getSysUserInfoByObj(checkUser);
+				  		if(checkUser !=null && checkUser.getSuiId()!=null){
+				  			srm.setCode(0l);
+				  			srm.setMeg("该账号已存在!");
+				  			return srm;
+				  		}else{
+				  			att_AgHospitalInfo.setCreateDate(new Date());
+				  			att_AgHospitalInfo.setCreateAccount(this.GetOneSessionAccount().getAccount());
+				  			agHospitalInfoDao.saveAgHospitalInfo(att_AgHospitalInfo);
+				  			SysUserInfo newUser = new SysUserInfo();
+				  			newUser.setAccount(att_AgHospitalInfo.getInitialUsername());
+				  			newUser.setBarCodeFileCode(att_AgHospitalInfo.getDomainName());//域名
+				  			newUser.setPassword(att_AgHospitalInfo.getInitialPassword());
+				  			newUser.setUserType(2);
+				  			newUser.setSroleId(att_AgHospitalInfo.getOrganizationId());
+				  			newUser.setState(Integer.parseInt(att_AgHospitalInfo.getStatus()));
+				  			newUser.setUserName(att_AgHospitalInfo.getName());
+				  			newUser.setCreateDate(new Date());
+				  			newUser.setUserRole(1);//设置为医院增加的管理员
+				  			//增加admin用户
+				  			sysUserInfoDao.saveUser(newUser);
+				  			SysUserInfo newUser2 = new SysUserInfo();
+				  			newUser2.setAccount("admin");
+				  			newUser2.setBarCodeFileCode(att_AgHospitalInfo.getDomainName());//域名
+				  			newUser2.setPassword("admin");
+				  			newUser2.setUserType(2);
+				  			newUser2.setSroleId(att_AgHospitalInfo.getOrganizationId());
+				  			newUser2.setState(Integer.parseInt(att_AgHospitalInfo.getStatus()));
+				  			newUser2.setUserName(att_AgHospitalInfo.getName());
+				  			newUser2.setCreateDate(new Date());
+				  			sysUserInfoDao.saveUser(newUser2);
+				  		}
+				  		//保存固定的角色岗位
+				  		AgHospitalRole att_AgHospitalRole = new AgHospitalRole();
+				  		att_AgHospitalRole.setOrganizationId(0);
+				  		att_AgHospitalRole.setLocked("1");
+				  		att_AgHospitalRole.setStatus("0");
+				  		List<AgHospitalRole> roleList = agHospitalRoleDao.getListByAgHospitalRole(att_AgHospitalRole);
+				  		if(roleList!=null && roleList.size() >0){
+				  			//查询该角色下有哪些岗位
+				  			String roleIds="";
+				  			for(AgHospitalRole role : roleList)
+				  				roleIds+=role.getRoleId()+",";
+				  			roleIds=roleIds.substring(0, roleIds.length()-1);
+				  			AgHospitalJob att_AgHospitalJob = new AgHospitalJob();
+				  			att_AgHospitalJob.setRoleId_str(roleIds);
+				  			att_AgHospitalJob.setLocked("1");
+				  			att_AgHospitalJob.setStatus("0");
+				  			List<AgHospitalJob> jobList = agHospitalJobDao.getListByAgHospitalJob(att_AgHospitalJob);
+				  			AgHospitalMenu att_AgHospitalMenu = new AgHospitalMenu();
+				  			List<AgHospitalMenu> menuList = agHospitalMenuDao.getListByAgHospitalMenu(att_AgHospitalMenu);
+				  			for(AgHospitalRole role : roleList){//保存角色信息
+				  				AgHospitalRole add_AgHospitalRole=new AgHospitalRole();
+				  				add_AgHospitalRole.setOrganizationId(att_AgHospitalInfo.getOrganizationId());
+				  				add_AgHospitalRole.setName(role.getName());
+				  				add_AgHospitalRole.setLocked(role.getLocked());
+				  				add_AgHospitalRole.setStatus("0");
+				  				add_AgHospitalRole.setCreateDate(new Date());
+				  				agHospitalRoleDao.saveOrUpdateAgHospitalRole(add_AgHospitalRole);
+				  				if(jobList !=null && jobList.size() >0){//保存岗位信息
+				  					for(AgHospitalJob job : jobList){
+				  						if(job.getRoleId().equals(role.getRoleId())){
+				  							AgHospitalJob add_AgHospitalJob = new AgHospitalJob();
+				  							add_AgHospitalJob.setRoleId(add_AgHospitalRole.getRoleId());
+				  							add_AgHospitalJob.setName(job.getName());
+				  							add_AgHospitalJob.setLocked(job.getLocked());
+				  							add_AgHospitalJob.setStatus("0");
+				  							add_AgHospitalJob.setCreateDate(new Date());
+				  							agHospitalJobDao.saveOrUpdateAgHospitalJob(add_AgHospitalJob);
+				  							if(job.getJobId().equals(1)){//如果增加的是管理员角色，增加管理员全部的菜单
+				  								if(menuList!= null && menuList.size() >0){
+				  									for(AgHospitalMenu menu : menuList){
+				  										AgJobMenuGx agJobMenuGx = new AgJobMenuGx();
+				  										agJobMenuGx.setJobId(add_AgHospitalJob.getJobId());
+				  										agJobMenuGx.setMenuId(menu.getMenuId());
+				  										this.newObject(agJobMenuGx);
+				  									}
+				  								}
+				  							}else if(job.getJobId().equals(7)){//如果是前台接待则赋予预约患者菜单
+				  								AgJobMenuGx agJobMenuGx = new AgJobMenuGx();
+		  										agJobMenuGx.setJobId(add_AgHospitalJob.getJobId());
+		  										agJobMenuGx.setMenuId(1);
+		  										this.newObject(agJobMenuGx);
+				  							}
+				  						}
+				  					}
+				  				}
+				  			}
+				  		}
+				  	}else{
+				  		agHospitalInfoDao.saveOrUpdateAgHospitalInfo(att_AgHospitalInfo); 
+				  		SysUserInfo updateUser = new SysUserInfo();
+				  		updateUser.setSroleId(att_AgHospitalInfo.getOrganizationId());
+				  		updateUser.setUserType(2);
+				  		List<SysUserInfo> list = this.getList(updateUser);
+				  		if(list != null && list.size() >0){
+				  			for(SysUserInfo user:list){
+				  				user.setState(Integer.parseInt(att_AgHospitalInfo.getStatus()));
+						  		this.updateObject(user);
+				  			}
+				  		}
+				  	}
+					srm.setObj(att_AgHospitalInfo);
+			    } catch (Exception e) {
+					e.printStackTrace(); 
+					throw new HSKException(e);
+		        }
+			return srm;	  
+	}
+	
+	 
+	/**
+	 *根据AgHospitalInfo对象作为对(ag_hospital_info表进行查询，获取分页对象
+     * @param  att_AgHospitalInfo  AgHospitalInfo类型(ag_hospital_info表记录)
+     * @return PagerModel  分页对象
+	 * @throws HSKException 
+	 */
+	public PagerModel getPagerModelObject (AgHospitalInfo att_AgHospitalInfo,String latitude,String longitude,String sort) throws HSKException{
+		PagerModel pm=new PagerModel(new ArrayList<AgHospitalInfo>());
+			  try{
+				    att_AgHospitalInfo.setTab_order("organizationId desc");
+					List<AgHospitalInfo> hosList = agHospitalInfoDao.getListByAgHospitalInfo(att_AgHospitalInfo);
+					pm=this.getSortHosPagerModel(hosList,latitude,longitude,sort);
+			    } catch (Exception e) {
+					e.printStackTrace(); 
+		        }
+		return pm;
+	}
+
+	@Override
+	public PagerModel getPagerModelByDocName(AgHospitalInfo att_AgHospitalInfo, String docName,String latitude,String longitude,String sort) throws HSKException {
+		PagerModel pm=new PagerModel(new ArrayList<AgHospitalInfo>());
+		try{
+			//根据医生名称模糊查询医生列表
+			AgDoctorInfo agDoctorInfo = new AgDoctorInfo();
+			agDoctorInfo.setName(docName);
+			agDoctorInfo.setStatus("0");
+			agDoctorInfo.setTab_like("name");
+			List<AgDoctorInfo> docList = agDoctorInfoDao.getListByAgDoctorInfo(agDoctorInfo);
+			String hoiIds=",";//医院id字符串
+			//如果医生列表存在，组合医院ID字符串
+			if(docList != null && docList.size() >0){
+				for(AgDoctorInfo doc : docList){
+					if(!hoiIds.contains(","+doc.getOrganizationId()+","))
+						hoiIds += doc.getOrganizationId()+",";
+				}
+				hoiIds=hoiIds.substring(1, hoiIds.length()-1);
+				//根据组合的医院ID字符串查询医院分页信息
+				att_AgHospitalInfo.setOrganizationId_str(hoiIds);
+				att_AgHospitalInfo.setStatus("0");
+				att_AgHospitalInfo.setTab_order("organizationId desc");
+				List<AgHospitalInfo> hosList = agHospitalInfoDao.getListByAgHospitalInfo(att_AgHospitalInfo);
+				pm=this.getSortHosPagerModel(hosList,latitude,longitude,sort);
+				if(pm.getTotalCount() >0){
+					//将医生信息组合到医院信息中
+					List<AgHospitalInfo> rows=pm.getRows();
+					for(AgHospitalInfo hos:rows){
+						List<String> docNames=new ArrayList<String>();
+						for(AgDoctorInfo doc : docList){
+							if(hos.getOrganizationId().equals(doc.getOrganizationId()))
+								docNames.add(doc.getName());
+						}
+						hos.setDocList(docNames);
+					}
+				}
+			}
+		}catch(Exception e) {
+			e.printStackTrace(); 
+        }
+		return pm;
+	}
+
+	@Override
+	public PagerModel getPagerModelByDepName(AgHospitalInfo att_AgHospitalInfo, String depName,String latitude,String longitude,String sort) throws HSKException {
+		PagerModel pm=new PagerModel(new ArrayList<AgHospitalInfo>());
+		try{
+			//根据科室名称模糊查询科室列表 
+			AgDepartmentInfo agDepartmentInfo = new AgDepartmentInfo();
+			agDepartmentInfo.setName(depName);
+			agDepartmentInfo.setStatus("0");
+			agDepartmentInfo.setTab_like("name");
+			List<AgDepartmentInfo> docList = agDepartmentInfoDao.getListByAgDepartmentInfo(agDepartmentInfo);
+			String hoiIds=",";//医院id字符串
+			//如果科室列表存在，组合医院ID字符串
+			if(docList != null && docList.size() >0){
+				for(AgDepartmentInfo dep : docList){
+					if(!hoiIds.contains(","+dep.getOrganizationId()+","))
+						hoiIds += dep.getOrganizationId()+",";
+				}
+				hoiIds=hoiIds.substring(1, hoiIds.length()-1);
+				//根据组合的医院ID字符串查询医院分页信息
+				att_AgHospitalInfo.setOrganizationId_str(hoiIds);
+				att_AgHospitalInfo.setStatus("0");
+				att_AgHospitalInfo.setTab_order("organizationId desc");
+				List<AgHospitalInfo> hosList = agHospitalInfoDao.getListByAgHospitalInfo(att_AgHospitalInfo);
+				pm=this.getSortHosPagerModel(hosList,latitude,longitude,sort);
+				if(pm.getTotalCount() >0){
+					//将科室信息组合到医院信息中
+					List<AgHospitalInfo> rows=pm.getRows();
+					for(AgHospitalInfo hos:rows){
+						List<String> depNames=new ArrayList<String>();
+						for(AgDepartmentInfo dep : docList){
+							if(dep.getOrganizationId().equals(dep.getOrganizationId()))
+								depNames.add(dep.getName());
+						}
+						hos.setDepList(depNames);
+					}
+				}
+			}
+		}catch(Exception e) {
+			e.printStackTrace(); 
+        }
+		return pm;
+	}
+
+	@Override
+	public List<Map<String, String>> getProvAndCityList() throws HSKException {
+		List<Map<String, String>> reList = new ArrayList<Map<String, String>>();
+		try {
+			List<Map<String,Object>> list = agHospitalInfoDao.getProvAndCityList();
+			if(list != null && list.size() >0){
+				for(Map<String,Object> map : list){
+					if(map.get("prov_id") !=null && map.get("city_id")!=null){
+						Map<String,String> reMap = new HashMap<String,String>();
+						reMap.put("provId", map.get("prov_id").toString());
+						reMap.put("cityId", map.get("city_id").toString());
+						reList.add(reMap);
+					}
+					
+				}
+			}
+		} catch (HSKDBException e) {
+			e.printStackTrace();
+		}
+		return reList;
+	}
+
+	@Override
+	public AgHospitalInfo getAgHospitalInfoByDomainName(String domainName) throws HSKException {
+		AgHospitalInfo att_AgHospitalInfo= new AgHospitalInfo();
+		att_AgHospitalInfo.setDomainName(domainName);
+		att_AgHospitalInfo.setStatus("0");
+		try {
+			List<AgHospitalInfo> reList = agHospitalInfoDao.getListByAgHospitalInfo(att_AgHospitalInfo);
+			if(reList!= null && reList.size() >0)
+				return reList.get(0);
+		} catch (HSKDBException e) {
+			e.printStackTrace();
+		}
+		return null;
+	} 
+	
+	public PagerModel getSortHosPagerModel(List<AgHospitalInfo> hosList,String latitude,String longitude,String sort){
+		PagerModel pm = new PagerModel();
+		List<AgHospitalInfo> pmList = new ArrayList<AgHospitalInfo>();
+		//计算距离
+		for(AgHospitalInfo info : hosList){
+			double calculateLineDistanc=0d;
+			if(latitude !=null && !latitude.equals("") && longitude!=null && !longitude.equals("") 
+				&& info.getLatitude()!=null && !info.getLatitude().equals("") && info.getLongitude()!=null && !info.getLongitude().equals("")){
+				LngLat start = new LngLat(Double.parseDouble(longitude), Double.parseDouble(latitude));
+			    LngLat end = new LngLat(Double.parseDouble(info.getLongitude()), Double.parseDouble(info.getLatitude()));
+				calculateLineDistanc = AMapUtils.calculateLineDistance(start, end);
+			}
+			info.setDistance(calculateLineDistanc);
+		}
+		
+		if(hosList!=null && hosList.size() >0){
+			pm.setTotal(hosList.size());
+			pm.setTotalCount(hosList.size());
+			List<AgHospitalInfo> hosSortList = new ArrayList<AgHospitalInfo>();
+			if(sort!=null && sort.equals("favourite")){//按照收藏排序
+				Integer count = hosList.size();
+				for(int i=0;i < count;i++){
+					AgHospitalInfo maxInfo = hosList.get(0);
+					for(int j=0;j<hosList.size();j++){
+						AgHospitalInfo info = hosList.get(j);
+						if(info.getFavouritesCount() > maxInfo.getFavouritesCount()){
+							maxInfo=info;
+						}
+					}
+					hosSortList.add(maxInfo);
+					hosList.remove(maxInfo);
+				}
+				
+			}else if(sort!=null && sort.equals("order")){//按照订单数排序
+				Integer count = hosList.size();
+				for(int i=0;i < count;i++){
+					AgHospitalInfo maxInfo = hosList.get(0);
+					for(int j=0;j<hosList.size();j++){
+						AgHospitalInfo info = hosList.get(j);
+						if(info.getMedicalOrdersCount() > maxInfo.getMedicalOrdersCount()){
+							maxInfo=info;
+						}
+					}
+					hosSortList.add(maxInfo);
+					hosList.remove(maxInfo);
+				}
+			}else if(sort!=null && sort.equals("distance")){//按照距离排序
+				Integer count = hosList.size();
+				for(int i=0;i < count;i++){
+					AgHospitalInfo maxInfo = hosList.get(0);
+					for(int j=0;j<hosList.size();j++){
+						AgHospitalInfo info = hosList.get(j);
+						if(info.getDistance() > maxInfo.getDistance()){
+							maxInfo=info;
+						}
+					}
+					hosSortList.add(maxInfo);
+					hosList.remove(maxInfo);
+				}
+			}else
+				hosSortList=hosList;
+			Integer pageSize=SystemContext.getPageSize();
+			Integer pageNo=SystemContext.getOffset();
+			int pageCount = (pm.getTotalCount() + pageSize - 1) / pageSize; // 总页数  
+            int start = 0; // 要开始返回的文档编号  
+            int end = 0; // 要结束返回的文档编号  
+            if (pageCount > 0) {  
+                start = (pageNo - 1) * pageSize;  
+                end = start + pageSize;  
+                if (pageNo == pageCount) { // 处理最后一页的结束文档的编号  
+                    end = start + (pm.getTotalCount() % pageSize);  
+                }  
+            }
+            for (int i = start; i < end; i++)
+            	pmList.add(hosSortList.get(i));
+            pm.setItems(pmList);
+			pm.setRows(pmList);
+		}else{
+			pm.setTotal(0);
+			pm.setTotalCount(0);
+			pm.setItems(pmList);
+			pm.setRows(pmList);
+		}
+		return pm;
+	}
+	 
+}

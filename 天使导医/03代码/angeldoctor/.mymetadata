@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="angeldoctor"
+  id="myeclipse.1444269665963"
+  context-root="/angeldoctor"
+  j2ee-spec="6.0"
+  archive="angeldoctor.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

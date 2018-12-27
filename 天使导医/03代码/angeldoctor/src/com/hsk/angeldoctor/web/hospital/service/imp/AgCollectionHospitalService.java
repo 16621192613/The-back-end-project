@@ -1,0 +1,173 @@
+package com.hsk.angeldoctor.web.hospital.service.imp;
+
+import java.util.*;
+
+import org.springframework.stereotype.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.supper.dto.comm.SysRetrunMessage; 
+import com.hsk.xframe.api.service.imp.DSTService;
+import com.hsk.exception.HSKDBException;
+import com.hsk.exception.HSKException;
+import com.hsk.angeldoctor.web.hospital.service.*;
+import com.hsk.angeldoctor.api.persistence.*;
+import com.hsk.angeldoctor.api.daobbase.*;
+
+
+/** 
+  hospital业务操作实现类 
+ * @author  作者:admin
+ * @version  版本信息:v1.0   创建时间: 2018-08-14 13:27:59
+ */
+ 
+@Service
+public class  AgCollectionHospitalService extends DSTService implements IAgCollectionHospitalService {	
+   /**
+   *业务处理dao类  agCollectionHospitalDao 
+   */
+	@Autowired
+	protected IAgCollectionHospitalDao agCollectionHospitalDao;
+	
+	@Autowired
+	private IAgHospitalInfoDao agHospitalInfoDao;
+ /**
+	 * 根据ag_collection_hospital表主键删除AgCollectionHospital对象记录
+     * @param  mchId  Integer类型(ag_collection_hospital表主键)
+	 * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+
+	public SysRetrunMessage findFormObject(Integer mchId) throws HSKException{
+	        SysRetrunMessage srm=new SysRetrunMessage(1l);
+			  	
+			try{
+		   			AgCollectionHospital     att_AgCollectionHospital= agCollectionHospitalDao.findAgCollectionHospitalById( mchId) ;
+					srm.setObj(att_AgCollectionHospital);
+				} catch (HSKDBException e) {
+					e.printStackTrace(); 
+					srm.setCode(0l);
+					srm.setMeg(e.getMessage()); 
+				}
+				 return srm ;
+	} 
+
+    /**
+	 * 根据ag_collection_hospital表主键删除AgCollectionHospital对象记录
+     * @param  mchId  Integer类型(ag_collection_hospital表主键)
+	 * @throws HSKException
+	 */
+
+	public AgCollectionHospital findObject(Integer mchId) throws HSKException{
+			AgCollectionHospital  att_AgCollectionHospital=new AgCollectionHospital();		
+			try{
+		        att_AgCollectionHospital= agCollectionHospitalDao.findAgCollectionHospitalById( mchId) ;
+				} catch (HSKDBException e) {
+					e.printStackTrace(); 
+					throw new  HSKException(e);
+				}
+				return  att_AgCollectionHospital;
+	}
+	
+	 
+	 /**
+	 * 根据ag_collection_hospital表主键删除AgCollectionHospital对象记录
+     * @param  mchId  Integer类型(ag_collection_hospital表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteObject(Integer mchId) throws HSKException{  
+		    SysRetrunMessage srm=new SysRetrunMessage(1l);
+		   try{ 
+			   AgCollectionHospital agCollectionHospital = new AgCollectionHospital();
+			   agCollectionHospital.setOrganizationId(mchId);
+			   agCollectionHospital.setSuiId(this.GetOneSessionAccount().getSuiId());
+			   agCollectionHospital = (AgCollectionHospital) this.getOne(agCollectionHospital);
+			   if(agCollectionHospital!=null)
+				   this.deleteObjects(agCollectionHospital);
+			 } catch (Exception e) {
+					e.printStackTrace(); 
+					throw new  HSKException(e);
+		     }
+		   return srm;  
+	}
+	
+	/**
+	 * 根据ag_collection_hospital表主键删除多条AgCollectionHospital对象记录
+     * @param  MchIds  Integer类型(ag_collection_hospital表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteAllObject(String mchIds) throws HSKException{
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try {
+			String[] ids = mchIds.split(",");
+			for (String did : ids) {
+				if (did != null && !"".equals(did.trim())) {
+					agCollectionHospitalDao.deleteAgCollectionHospitalById(Integer
+							.valueOf(did));
+				}
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			HSKException hse = new HSKException(e);
+			hse.setDisposeType("01");
+			throw hse;
+		} catch (HSKDBException e) {
+			e.printStackTrace();
+			throw new HSKException(e);
+		}
+		return srm;	  
+	 }
+	 
+ 
+	 /**
+	 * 新增或修改ag_collection_hospital表记录 ,如果ag_collection_hospital表主键AgCollectionHospital.MchId为空就是添加，如果非空就是修改
+     * @param  att_AgCollectionHospital  AgCollectionHospital类型(ag_collection_hospital表记录)
+     * @return AgCollectionHospital  修改后的AgCollectionHospital对象记录
+	 * @throws HSKDBException
+	 */
+	public SysRetrunMessage saveOrUpdateObject( AgCollectionHospital att_AgCollectionHospital) throws HSKException{
+			 SysRetrunMessage srm = new SysRetrunMessage(1l);
+			  try{
+				  AgCollectionHospital agCollectionHospital = (AgCollectionHospital) this.getOne(att_AgCollectionHospital);
+				  if(agCollectionHospital==null)
+					  agCollectionHospitalDao.saveOrUpdateAgCollectionHospital(att_AgCollectionHospital); 
+				  srm.setObj(att_AgCollectionHospital);
+			    } catch (Exception e) {
+					e.printStackTrace(); 
+					throw new HSKException(e);
+		        }
+			return srm;	  
+	}
+	
+	 
+	/**
+	 *根据AgCollectionHospital对象作为对(ag_collection_hospital表进行查询，获取分页对象
+     * @param  att_AgCollectionHospital  AgCollectionHospital类型(ag_collection_hospital表记录)
+     * @return PagerModel  分页对象
+	 * @throws HSKException 
+	 */
+	public PagerModel getPagerModelObject (AgCollectionHospital att_AgCollectionHospital) throws HSKException{
+		PagerModel pm=new PagerModel(new ArrayList<AgCollectionHospital>());
+			  try{
+					pm=agCollectionHospitalDao.getPagerModelByAgCollectionHospital(att_AgCollectionHospital);
+					 List<AgCollectionHospital> list_obj= pm.getItems();
+					 if(list_obj!=null&&list_obj.size()>0){
+						 String ids="";
+						 for(AgCollectionHospital did:list_obj){
+							 ids+=did.getOrganizationId() +",";
+						 }
+						 ids= ids.substring(0, ids.length()-1);
+						 AgHospitalInfo att_AgHospitalInfo=new AgHospitalInfo(); 
+						 att_AgHospitalInfo.setOrganizationId_str(ids);
+						List<AgHospitalInfo> list_search= agHospitalInfoDao.getListByAgHospitalInfo(att_AgHospitalInfo);
+						pm.setRows(list_search);
+					 }
+					
+			    } catch (Exception e) {
+					e.printStackTrace(); 
+		        }
+		return pm;
+	} 
+	 
+}

@@ -1,0 +1,757 @@
+package com.hsk.angeldoctor.api.persistence;
+
+import javax.persistence.*;
+
+import org.hibernate.annotations.Formula;
+
+import static javax.persistence.GenerationType.IDENTITY;
+import java.util.Date;
+
+/**
+ * 根据ag_feedback_info表结构自动生成持久化对象<B> com.hsk.angeldoctor.api.persistence.AgFeedbackInfo</B>
+ *<hr/>
+ *===============数据库表字段属性==========
+ *  <table> 
+ * <tr><th>字段名称:</th><td>意见反馈ID(afbiId)</td><th>字段类型:</th><td>Integer(主键)</td></tr> 
+ * <tr><th>字段名称:</th><td>编号(serialNumber)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>反馈人ID(userId)</td><th>字段类型:</th><td>Integer(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>反馈类型:1患者；2业务员(feedbackType)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>预约ID(medicalRecordId)</td><th>字段类型:</th><td>Integer(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>标签(feedbackLabels)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>反馈内容(feedbackContent)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>是否回复(replied)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>回复人ID(repUserId)</td><th>字段类型:</th><td>Integer(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>回复内容(repliedContent)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>回复时间(repliedDate)</td><th>字段类型:</th><td>Date(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>图片(images)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>状态:1正常，2禁用(status)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>创建人(createRen)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>创建时间(createDate)</td><th>字段类型:</th><td>Date(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>修改人(editRen)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>修改时间(editDate)</td><th>字段类型:</th><td>Date(可以为空)</td></tr> 
+ * </table>
+ *===============无关字段属性===============
+ *  <table> 
+ * 	<tr><th>字段名称:</th><td>意见反馈ID(afbiId)	</td><th>属性名称:</th><td>afbiId</td></tr>
+ * 	<tr><th>字段名称:</th><td>反馈人ID(userId)	</td><th>属性名称:</th><td>userId</td></tr>
+ * 	<tr><th>字段名称:</th><td>预约ID(medicalRecordId)	</td><th>属性名称:</th><td>medicalRecordId</td></tr>
+ * 	<tr><th>字段名称:</th><td>回复人ID(repUserId)	</td><th>属性名称:</th><td>repUserId</td></tr>
+ * 	<tr><th>字段名称:</th><td>回复时间(repliedDate)	</td><th>属性名称:</th><td>repliedDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>回复时间(repliedDate)	</td><th>属性名称:</th><td>repliedDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>创建时间(createDate)	</td><th>属性名称:</th><td>createDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>创建时间(createDate)	</td><th>属性名称:</th><td>createDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>修改时间(editDate)	</td><th>属性名称:</th><td>editDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>修改时间(editDate)	</td><th>属性名称:</th><td>editDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>(tab_like)	</td><th>属性名称:</th><td>tab_like</td></tr>
+ * 	<tr><th>字段名称:</th><td>(tab_order)	</td><th>属性名称:</th><td>tab_order</td></tr>
+ * </table>
+ * <hr/>
+ * @author  作者:admin  
+ * @version  v1.0 创建时间: 2018-08-14 13:40:21
+ */
+ 
+ 
+@SuppressWarnings("serial")
+@Entity
+@Table(name = "ag_feedback_info" )
+public class AgFeedbackInfo {
+///===============数据库表字段属性begin==========
+			/**
+			 *意见反馈ID(afbiId):字段类型为Integer  
+			 */
+ 			private Integer afbiId; 
+ 	
+			/**
+			 *编号(serialNumber):字段类型为String  
+			 */
+ 			private String serialNumber; 
+ 	
+			/**
+			 *反馈人ID(userId):字段类型为Integer  
+			 */
+ 			private Integer userId; 
+ 			/**
+ 			 * 预约患者ID
+ 			 */
+ 			private Integer orderPatientId;
+ 	
+			/**
+			 *反馈类型:1患者；2业务员(feedbackType):字段类型为String  
+			 */
+ 			private String feedbackType; 
+ 	
+			/**
+			 *预约ID(medicalRecordId):字段类型为Integer  
+			 */
+ 			private Integer medicalRecordId; 
+ 	
+			/**
+			 *标签(feedbackLabels):字段类型为String  
+			 */
+ 			private String feedbackLabels; 
+ 	
+			/**
+			 *反馈内容(feedbackContent):字段类型为String  
+			 */
+ 			private String feedbackContent; 
+ 	
+			/**
+			 *是否回复(replied):字段类型为String  
+			 */
+ 			private String replied; 
+ 	
+			/**
+			 *回复人ID(repUserId):字段类型为Integer  
+			 */
+ 			private Integer repUserId; 
+ 	
+			/**
+			 *回复内容(repliedContent):字段类型为String  
+			 */
+ 			private String repliedContent; 
+ 	
+			/**
+			 *回复时间(repliedDate):字段类型为Date  
+			 */
+ 			private Date repliedDate; 
+ 	
+			/**
+			 *图片(images):字段类型为String  
+			 */
+ 			private String images; 
+ 	
+			/**
+			 *状态:1正常，2禁用(status):字段类型为String  
+			 */
+ 			private String status; 
+ 	
+			/**
+			 *创建人(createRen):字段类型为String  
+			 */
+ 			private String createRen; 
+ 	
+			/**
+			 *创建时间(createDate):字段类型为Date  
+			 */
+ 			private Date createDate; 
+ 	
+			/**
+			 *修改人(editRen):字段类型为String  
+			 */
+ 			private String editRen; 
+ 	
+			/**
+			 *修改时间(editDate):字段类型为Date  
+			 */
+ 			private Date editDate; 
+ 	
+			/**
+			 *设置意见反馈ID(afbi_id)字段方法 (该字段是主键)
+			 *@return  返回 <b>AgFeedbackInfo.AfbiId</b>的值
+			 */	 
+			@Id
+			@GeneratedValue(strategy = IDENTITY)
+			@Column(name = "afbi_id")
+			public Integer getAfbiId(){
+			    return this.afbiId;
+			}
+
+		  /**
+		   *设置 afbi_id字段方法 
+		   *@param att_afbiId 输入<b>AgFeedbackInfo.afbiId</b>字段的值
+		   */
+		  public void setAfbiId(Integer att_afbiId){
+		    this.afbiId = att_afbiId;
+		  }
+  
+			/**
+			 *设置编号(serial_number)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.SerialNumber</b>的值
+			 */	 
+			@Column(name = "serial_number" ) 
+			public String getSerialNumber(){
+			    return this.serialNumber;
+			}
+
+		  /**
+		   *设置 serial_number字段方法 
+		   *@param att_serialNumber 输入<b>AgFeedbackInfo.serialNumber</b>字段的值
+		   */
+		  public void setSerialNumber(String att_serialNumber){
+		    this.serialNumber = att_serialNumber;
+		  }
+  
+			/**
+			 *设置反馈人ID(user_id)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.UserId</b>的值
+			 */	 
+			@Column(name = "user_id" ) 
+			public Integer getUserId(){
+			    return this.userId;
+			}
+
+		  /**
+		   *设置 user_id字段方法 
+		   *@param att_userId 输入<b>AgFeedbackInfo.userId</b>字段的值
+		   */
+		  public void setUserId(Integer att_userId){
+		    this.userId = att_userId;
+		  }
+  
+			/**
+			 *设置反馈类型:1患者；2业务员(feedback_type)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.FeedbackType</b>的值
+			 */	 
+			@Column(name = "feedback_type" ) 
+			public String getFeedbackType(){
+			    return this.feedbackType;
+			}
+
+		  /**
+		   *设置 feedback_type字段方法 
+		   *@param att_feedbackType 输入<b>AgFeedbackInfo.feedbackType</b>字段的值
+		   */
+		  public void setFeedbackType(String att_feedbackType){
+		    this.feedbackType = att_feedbackType;
+		  }
+  
+			/**
+			 *设置预约ID(medical_record_id)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.MedicalRecordId</b>的值
+			 */	 
+			@Column(name = "medical_record_id" ) 
+			public Integer getMedicalRecordId(){
+			    return this.medicalRecordId;
+			}
+
+		  /**
+		   *设置 medical_record_id字段方法 
+		   *@param att_medicalRecordId 输入<b>AgFeedbackInfo.medicalRecordId</b>字段的值
+		   */
+		  public void setMedicalRecordId(Integer att_medicalRecordId){
+		    this.medicalRecordId = att_medicalRecordId;
+		  }
+  
+			/**
+			 *设置标签(feedback_labels)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.FeedbackLabels</b>的值
+			 */	 
+			@Column(name = "feedback_labels" ) 
+			public String getFeedbackLabels(){
+			    return this.feedbackLabels;
+			}
+
+		  /**
+		   *设置 feedback_labels字段方法 
+		   *@param att_feedbackLabels 输入<b>AgFeedbackInfo.feedbackLabels</b>字段的值
+		   */
+		  public void setFeedbackLabels(String att_feedbackLabels){
+		    this.feedbackLabels = att_feedbackLabels;
+		  }
+  
+			/**
+			 *设置反馈内容(feedback_content)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.FeedbackContent</b>的值
+			 */	 
+			@Column(name = "feedback_content" ) 
+			public String getFeedbackContent(){
+			    return this.feedbackContent;
+			}
+
+		  /**
+		   *设置 feedback_content字段方法 
+		   *@param att_feedbackContent 输入<b>AgFeedbackInfo.feedbackContent</b>字段的值
+		   */
+		  public void setFeedbackContent(String att_feedbackContent){
+		    this.feedbackContent = att_feedbackContent;
+		  }
+  
+			/**
+			 *设置是否回复(replied)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.Replied</b>的值
+			 */	 
+			@Column(name = "replied" ) 
+			public String getReplied(){
+			    return this.replied;
+			}
+
+		  /**
+		   *设置 replied字段方法 
+		   *@param att_replied 输入<b>AgFeedbackInfo.replied</b>字段的值
+		   */
+		  public void setReplied(String att_replied){
+		    this.replied = att_replied;
+		  }
+  
+			/**
+			 *设置回复人ID(rep_user_id)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.RepUserId</b>的值
+			 */	 
+			@Column(name = "rep_user_id" ) 
+			public Integer getRepUserId(){
+			    return this.repUserId;
+			}
+
+		  /**
+		   *设置 rep_user_id字段方法 
+		   *@param att_repUserId 输入<b>AgFeedbackInfo.repUserId</b>字段的值
+		   */
+		  public void setRepUserId(Integer att_repUserId){
+		    this.repUserId = att_repUserId;
+		  }
+  
+			/**
+			 *设置回复内容(replied_content)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.RepliedContent</b>的值
+			 */	 
+			@Column(name = "replied_content" ) 
+			public String getRepliedContent(){
+			    return this.repliedContent;
+			}
+
+		  /**
+		   *设置 replied_content字段方法 
+		   *@param att_repliedContent 输入<b>AgFeedbackInfo.repliedContent</b>字段的值
+		   */
+		  public void setRepliedContent(String att_repliedContent){
+		    this.repliedContent = att_repliedContent;
+		  }
+  
+			/**
+			 *设置回复时间(replied_date)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.RepliedDate</b>的值
+			 */	 
+			@Temporal(TemporalType.TIMESTAMP)
+			@Column(name = "replied_date" ) 
+			public Date getRepliedDate(){
+			    return this.repliedDate;
+			}
+
+		  /**
+		   *设置 replied_date字段方法 
+		   *@param att_repliedDate 输入<b>AgFeedbackInfo.repliedDate</b>字段的值
+		   */
+		  public void setRepliedDate(Date att_repliedDate){
+		    this.repliedDate = att_repliedDate;
+		  }
+  
+			/**
+			 *设置图片(images)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.Images</b>的值
+			 */	 
+			@Column(name = "images" ) 
+			public String getImages(){
+			    return this.images;
+			}
+
+		  /**
+		   *设置 images字段方法 
+		   *@param att_images 输入<b>AgFeedbackInfo.images</b>字段的值
+		   */
+		  public void setImages(String att_images){
+		    this.images = att_images;
+		  }
+  
+			/**
+			 *设置状态:1正常，2禁用(status)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.Status</b>的值
+			 */	 
+			@Column(name = "status" ) 
+			public String getStatus(){
+			    return this.status;
+			}
+
+		  /**
+		   *设置 status字段方法 
+		   *@param att_status 输入<b>AgFeedbackInfo.status</b>字段的值
+		   */
+		  public void setStatus(String att_status){
+		    this.status = att_status;
+		  }
+  
+			/**
+			 *设置创建人(create_ren)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.CreateRen</b>的值
+			 */	 
+			@Column(name = "create_ren" ) 
+			public String getCreateRen(){
+			    return this.createRen;
+			}
+
+		  /**
+		   *设置 create_ren字段方法 
+		   *@param att_createRen 输入<b>AgFeedbackInfo.createRen</b>字段的值
+		   */
+		  public void setCreateRen(String att_createRen){
+		    this.createRen = att_createRen;
+		  }
+  
+			/**
+			 *设置创建时间(create_date)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.CreateDate</b>的值
+			 */	 
+			@Temporal(TemporalType.TIMESTAMP)
+			@Column(name = "create_date" ) 
+			public Date getCreateDate(){
+			    return this.createDate;
+			}
+
+		  /**
+		   *设置 create_date字段方法 
+		   *@param att_createDate 输入<b>AgFeedbackInfo.createDate</b>字段的值
+		   */
+		  public void setCreateDate(Date att_createDate){
+		    this.createDate = att_createDate;
+		  }
+  
+			/**
+			 *设置修改人(edit_ren)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.EditRen</b>的值
+			 */	 
+			@Column(name = "edit_ren" ) 
+			public String getEditRen(){
+			    return this.editRen;
+			}
+
+		  /**
+		   *设置 edit_ren字段方法 
+		   *@param att_editRen 输入<b>AgFeedbackInfo.editRen</b>字段的值
+		   */
+		  public void setEditRen(String att_editRen){
+		    this.editRen = att_editRen;
+		  }
+  
+			/**
+			 *设置修改时间(edit_date)字段方法 
+			 *@return  返回 <b>AgFeedbackInfo.EditDate</b>的值
+			 */	 
+			@Temporal(TemporalType.TIMESTAMP)
+			@Column(name = "edit_date" ) 
+			public Date getEditDate(){
+			    return this.editDate;
+			}
+
+		  /**
+		   *设置 edit_date字段方法 
+		   *@param att_editDate 输入<b>AgFeedbackInfo.editDate</b>字段的值
+		   */
+		  public void setEditDate(Date att_editDate){
+		    this.editDate = att_editDate;
+		  }
+  
+		  @Column(name = "order_patient_id")
+		  public Integer getOrderPatientId() {
+				return orderPatientId;
+			}
+
+			public void setOrderPatientId(Integer orderPatientId) {
+				this.orderPatientId = orderPatientId;
+			}
+///===============数据库表字段属性end==========
+
+///===============数据库表无关子段字段属性begin==========
+			/**
+			 *意见反馈ID(afbi_id):字段类型为String
+			 */
+		  private String afbiId_str;  
+			/**
+			 *反馈人ID(user_id):字段类型为String
+			 */
+		  private String userId_str;  
+			/**
+			 *预约ID(medical_record_id):字段类型为String
+			 */
+		  private String medicalRecordId_str;  
+			/**
+			 *回复人ID(rep_user_id):字段类型为String
+			 */
+		  private String repUserId_str;  
+			/**
+			 *回复时间(replied_date):字段类型为Date
+			 */
+		  private Date repliedDate_start;  
+			/**
+			 *回复时间(replied_date):字段类型为Date
+			 */
+		  private Date repliedDate_end;  
+			/**
+			 *创建时间(create_date):字段类型为Date
+			 */
+		  private Date createDate_start;  
+			/**
+			 *创建时间(create_date):字段类型为Date
+			 */
+		  private Date createDate_end;  
+			/**
+			 *修改时间(edit_date):字段类型为Date
+			 */
+		  private Date editDate_start;  
+			/**
+			 *修改时间(edit_date):字段类型为Date
+			 */
+		  private Date editDate_end;  
+			/**
+			 *():字段类型为String
+			 *ag_feedback_info表里不用like作为条件的字符串
+			 */
+		  private String Tab_like;  
+			/**
+			 *():字段类型为String
+			 *ag_feedback_info表里order by 字符串
+			 */
+		  private String Tab_order;  
+			/**
+			 *设置afbiId字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.afbiId</b>的值
+			 */ 
+			@Transient
+			public String getAfbiId_str(){
+				return this.afbiId_str;
+			}
+			/**
+			  *设置 afbi_id字段方法 
+			  *@param att_afbiId 输入<b>AgFeedbackInfo.afbiId</b>字段的值
+			  */
+			public void setAfbiId_str(String att_afbiId_str){
+				this.afbiId_str = att_afbiId_str;
+			}
+			/**
+			 *设置userId字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.userId</b>的值
+			 */ 
+			@Transient
+			public String getUserId_str(){
+				return this.userId_str;
+			}
+			/**
+			  *设置 user_id字段方法 
+			  *@param att_userId 输入<b>AgFeedbackInfo.userId</b>字段的值
+			  */
+			public void setUserId_str(String att_userId_str){
+				this.userId_str = att_userId_str;
+			}
+			/**
+			 *设置medicalRecordId字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.medicalRecordId</b>的值
+			 */ 
+			@Transient
+			public String getMedicalRecordId_str(){
+				return this.medicalRecordId_str;
+			}
+			/**
+			  *设置 medical_record_id字段方法 
+			  *@param att_medicalRecordId 输入<b>AgFeedbackInfo.medicalRecordId</b>字段的值
+			  */
+			public void setMedicalRecordId_str(String att_medicalRecordId_str){
+				this.medicalRecordId_str = att_medicalRecordId_str;
+			}
+			/**
+			 *设置repUserId字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.repUserId</b>的值
+			 */ 
+			@Transient
+			public String getRepUserId_str(){
+				return this.repUserId_str;
+			}
+			/**
+			  *设置 rep_user_id字段方法 
+			  *@param att_repUserId 输入<b>AgFeedbackInfo.repUserId</b>字段的值
+			  */
+			public void setRepUserId_str(String att_repUserId_str){
+				this.repUserId_str = att_repUserId_str;
+			}
+			/**
+			 *设置repliedDate字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.repliedDate</b>的值
+			 */ 
+			@Transient
+			public Date getRepliedDate_start(){
+				return this.repliedDate_start;
+			}
+			/**
+			  *设置 replied_date字段方法 
+			  *@param att_repliedDate 输入<b>AgFeedbackInfo.repliedDate</b>字段的值
+			  */
+			public void setRepliedDate_start(Date att_repliedDate_start){
+				this.repliedDate_start = att_repliedDate_start;
+			}
+			/**
+			 *设置repliedDate字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.repliedDate</b>的值
+			 */ 
+			@Transient
+			public Date getRepliedDate_end(){
+				return this.repliedDate_end;
+			}
+			/**
+			  *设置 replied_date字段方法 
+			  *@param att_repliedDate 输入<b>AgFeedbackInfo.repliedDate</b>字段的值
+			  */
+			public void setRepliedDate_end(Date att_repliedDate_end){
+				this.repliedDate_end = att_repliedDate_end;
+			}
+			/**
+			 *设置createDate字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.createDate</b>的值
+			 */ 
+			@Transient
+			public Date getCreateDate_start(){
+				return this.createDate_start;
+			}
+			/**
+			  *设置 create_date字段方法 
+			  *@param att_createDate 输入<b>AgFeedbackInfo.createDate</b>字段的值
+			  */
+			public void setCreateDate_start(Date att_createDate_start){
+				this.createDate_start = att_createDate_start;
+			}
+			/**
+			 *设置createDate字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.createDate</b>的值
+			 */ 
+			@Transient
+			public Date getCreateDate_end(){
+				return this.createDate_end;
+			}
+			/**
+			  *设置 create_date字段方法 
+			  *@param att_createDate 输入<b>AgFeedbackInfo.createDate</b>字段的值
+			  */
+			public void setCreateDate_end(Date att_createDate_end){
+				this.createDate_end = att_createDate_end;
+			}
+			/**
+			 *设置editDate字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.editDate</b>的值
+			 */ 
+			@Transient
+			public Date getEditDate_start(){
+				return this.editDate_start;
+			}
+			/**
+			  *设置 edit_date字段方法 
+			  *@param att_editDate 输入<b>AgFeedbackInfo.editDate</b>字段的值
+			  */
+			public void setEditDate_start(Date att_editDate_start){
+				this.editDate_start = att_editDate_start;
+			}
+			/**
+			 *设置editDate字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.editDate</b>的值
+			 */ 
+			@Transient
+			public Date getEditDate_end(){
+				return this.editDate_end;
+			}
+			/**
+			  *设置 edit_date字段方法 
+			  *@param att_editDate 输入<b>AgFeedbackInfo.editDate</b>字段的值
+			  */
+			public void setEditDate_end(Date att_editDate_end){
+				this.editDate_end = att_editDate_end;
+			}
+			/**
+			 *设置tab_like字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.tab_like</b>的值
+			 */ 
+			@Transient
+			public String getTab_like(){
+				return this.Tab_like;
+			}
+			/**
+			  *设置 字段方法 
+			  *@param att_tab_like 输入<b>AgFeedbackInfo.tab_like</b>字段的值
+			  */
+			public void setTab_like(String att_Tab_like){
+				this.Tab_like = att_Tab_like;
+			}
+			/**
+			 *设置tab_order字段方法  
+			 *@return  返回 <b>AgFeedbackInfo.tab_order</b>的值
+			 */ 
+			@Transient
+			public String getTab_order(){
+				return this.Tab_order;
+			}
+			/**
+			  *设置 字段方法 
+			  *@param att_tab_order 输入<b>AgFeedbackInfo.tab_order</b>字段的值
+			  */
+			public void setTab_order(String att_Tab_order){
+				this.Tab_order = att_Tab_order;
+			}
+///===============数据库表无关子段字段属性end==========
+			private String patientName;
+			private String wechatName;
+			private String agentName;
+			private String agentMobile;
+			private String repliedName;
+			private String doctorName;
+			private String organizationName;
+			private Integer id;
+			
+			@Formula("(SELECT a.name FROM ag_patient_info a WHERE a.patient_id= user_id)")
+			public String getPatientName() {
+				return patientName;
+			}
+
+			public void setPatientName(String patientName) {
+				this.patientName = patientName;
+			}
+			@Formula("(SELECT a.name FROM ag_doctor_info a,ag_order_info b WHERE b.doctor_id= a.doctor_id and b.aoi_id=medical_record_id)")
+			public String getDoctorName() {
+				return doctorName;
+			}
+
+			public void setDoctorName(String doctorName) {
+				this.doctorName = doctorName;
+			}
+			@Formula("(SELECT a.name FROM ag_hospital_info a,ag_order_info b WHERE a.organization_id= b.organization_id and b.aoi_id=medical_record_id)")
+			public String getOrganizationName() {
+				return organizationName;
+			}
+
+			public void setOrganizationName(String organizationName) {
+				this.organizationName = organizationName;
+			}
+			@Formula("(SELECT b.wechat_name FROM ag_patient_info a,ag_wechat_info b WHERE a.patient_id= user_id and a.wechat_user_id=b.wechat_user_id)")
+			public String getWechatName() {
+				return wechatName;
+			}
+			public void setWechatName(String wechatName) {
+				this.wechatName = wechatName;
+			}
+			@Formula("(SELECT a.name FROM ag_business_user a WHERE a.agent_id= user_id)")
+			public String getAgentName() {
+				return agentName;
+			}
+
+			public void setAgentName(String agentName) {
+				this.agentName = agentName;
+			}
+			@Formula("(SELECT a.mobile FROM ag_business_user a WHERE a.agent_id= user_id)")
+			public String getAgentMobile() {
+				return agentMobile;
+			}
+
+			public void setAgentMobile(String agentMobile) {
+				this.agentMobile = agentMobile;
+			}
+			@Formula("(SELECT a.user_Name FROM sys_user_info a WHERE a.sui_id= rep_user_id)")
+			public String getRepliedName() {
+				return repliedName;
+			}
+
+			public void setRepliedName(String repliedName) {
+				this.repliedName = repliedName;
+			}
+			
+			@Transient
+			public Integer getId() {
+				return afbiId;
+			}
+
+			public void setId(Integer id) {
+				this.afbiId=id;
+			}
+} 

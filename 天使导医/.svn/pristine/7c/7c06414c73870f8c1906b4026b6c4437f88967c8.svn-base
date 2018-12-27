@@ -1,0 +1,723 @@
+package com.hsk.angeldoctor.api.persistence;
+
+import javax.persistence.*; 
+
+import org.hibernate.annotations.Formula;
+
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+
+import static javax.persistence.GenerationType.IDENTITY;
+import java.util.Date;
+
+/**
+ * 根据ag_patient_info表结构自动生成持久化对象<B> com.hsk.angeldoctor.api.persistence.AgPatientInfo</B>
+ *<hr/>
+ *===============数据库表字段属性==========
+ *  <table> 
+ * <tr><th>字段名称:</th><td>患者ID(patientId)</td><th>字段类型:</th><td>Integer(主键)</td></tr> 
+ * <tr><th>字段名称:</th><td>微信ID(wechatUserId)</td><th>字段类型:</th><td>Integer(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>患者姓名(name)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>患者手机号(mobile)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>性别(gender)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>年龄(age)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>来源:上级业务员ID(source)</td><th>字段类型:</th><td>Integer(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>银行名称(bankName)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>银行账户名称(bankAccountName)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>银行账号(bankAccountNumber)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>状态:0正常(status)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>创建人(createRen)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>创建时间(createDate)</td><th>字段类型:</th><td>Date(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>修改人(editRen)</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>修改时间(editDate)</td><th>字段类型:</th><td>Date(可以为空)</td></tr> 
+ * <tr><th>字段名称:</th><td>一级业务员手机号(scene_Mobile )</td><th>字段类型:</th><td>String(可以为空)</td></tr> 
+ * </table>
+ *===============无关字段属性===============
+ *  <table> 
+ * 	<tr><th>字段名称:</th><td>患者ID(patientId)	</td><th>属性名称:</th><td>patientId</td></tr>
+ * 	<tr><th>字段名称:</th><td>微信ID(wechatUserId)	</td><th>属性名称:</th><td>wechatUserId</td></tr>
+ * 	<tr><th>字段名称:</th><td>来源:上级业务员ID(source)	</td><th>属性名称:</th><td>source</td></tr>
+ * 	<tr><th>字段名称:</th><td>创建时间(createDate)	</td><th>属性名称:</th><td>createDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>创建时间(createDate)	</td><th>属性名称:</th><td>createDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>修改时间(editDate)	</td><th>属性名称:</th><td>editDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>修改时间(editDate)	</td><th>属性名称:</th><td>editDate</td></tr>
+ * 	<tr><th>字段名称:</th><td>(tab_like)	</td><th>属性名称:</th><td>tab_like</td></tr>
+ * 	<tr><th>字段名称:</th><td>(tab_order)	</td><th>属性名称:</th><td>tab_order</td></tr>
+ * </table>
+ * <hr/>
+ * @author  作者:admin  
+ * @version  v1.0 创建时间: 2018-08-14 13:35:36
+ */
+ 
+ 
+@SuppressWarnings("serial")
+@Entity
+@Table(name = "ag_patient_info" )
+public class AgPatientInfo {
+///===============数据库表字段属性begin==========
+			/**
+			 *患者ID(patientId):字段类型为Integer  
+			 */
+ 			private Integer patientId; 
+ 	
+			/**
+			 *微信ID(wechatUserId):字段类型为Integer  
+			 */
+ 			private Integer wechatUserId; 
+ 	
+			/**
+			 *患者姓名(name):字段类型为String  
+			 */
+ 			private String name; 
+ 	
+			/**
+			 *患者手机号(mobile):字段类型为String  
+			 */
+ 			private String mobile; 
+ 	
+			/**
+			 *性别(gender):字段类型为String  
+			 */
+ 			private String gender; 
+ 	
+			/**
+			 *年龄(age):字段类型为String  
+			 */
+ 			private String age; 
+ 	
+			/**
+			 *来源:上级业务员ID(source):字段类型为Integer  
+			 */
+ 			private Integer source; 
+ 	
+			/**
+			 *银行名称(bankName):字段类型为String  
+			 */
+ 			private String bankName; 
+ 	
+			/**
+			 *银行账户名称(bankAccountName):字段类型为String  
+			 */
+ 			private String bankAccountName; 
+ 	
+			/**
+			 *银行账号(bankAccountNumber):字段类型为String  
+			 */
+ 			private String bankAccountNumber; 
+ 	
+			/**
+			 *状态:0正常(status):字段类型为String  
+			 */
+ 			private String status; 
+ 	
+			/**
+			 *创建人(createRen):字段类型为String  
+			 */
+ 			private String createRen; 
+ 	
+			/**
+			 *创建时间(createDate):字段类型为Date  
+			 */
+ 			private Date createDate; 
+ 	
+			/**
+			 *修改人(editRen):字段类型为String  
+			 */
+ 			private String editRen; 
+ 	
+			/**
+			 *修改时间(editDate):字段类型为Date  
+			 */
+ 			private Date editDate; 
+ 			
+ 			
+ 			/**
+ 			 * 一级业务员手机号
+ 			 */
+ 			private String sceneMobile ;
+ 			/**
+ 			 * 最后一次到诊时间
+ 			 */
+ 			private Date lastDealDate;
+ 			
+ 			 
+
+			/**
+			 *设置患者ID(patient_id)字段方法 (该字段是主键)
+			 *@return  返回 <b>AgPatientInfo.PatientId</b>的值
+			 */	 
+			@Id
+			@GeneratedValue(strategy = IDENTITY)
+			@Column(name = "patient_id")
+			public Integer getPatientId(){
+			    return this.patientId;
+			}
+
+		  /**
+		   *设置 patient_id字段方法 
+		   *@param att_patientId 输入<b>AgPatientInfo.patientId</b>字段的值
+		   */
+		  public void setPatientId(Integer att_patientId){
+		    this.patientId = att_patientId;
+		  }
+  
+			/**
+			 *设置微信ID(wechat_user_id)字段方法 
+			 *@return  返回 <b>AgPatientInfo.WechatUserId</b>的值
+			 */	 
+			@Column(name = "wechat_user_id" ) 
+			public Integer getWechatUserId(){
+			    return this.wechatUserId;
+			}
+
+		  /**
+		   *设置 wechat_user_id字段方法 
+		   *@param att_wechatUserId 输入<b>AgPatientInfo.wechatUserId</b>字段的值
+		   */
+		  public void setWechatUserId(Integer att_wechatUserId){
+		    this.wechatUserId = att_wechatUserId;
+		  }
+  
+			/**
+			 *设置患者姓名(name)字段方法 
+			 *@return  返回 <b>AgPatientInfo.Name</b>的值
+			 */	 
+			@Column(name = "name" ) 
+			public String getName(){
+			    return this.name;
+			}
+
+		  /**
+		   *设置 name字段方法 
+		   *@param att_name 输入<b>AgPatientInfo.name</b>字段的值
+		   */
+		  public void setName(String att_name){
+		    this.name = att_name;
+		  }
+  
+			/**
+			 *设置患者手机号(mobile)字段方法 
+			 *@return  返回 <b>AgPatientInfo.Mobile</b>的值
+			 */	 
+			@Column(name = "mobile" ) 
+			public String getMobile(){
+			    return this.mobile;
+			}
+
+		  /**
+		   *设置 mobile字段方法 
+		   *@param att_mobile 输入<b>AgPatientInfo.mobile</b>字段的值
+		   */
+		  public void setMobile(String att_mobile){
+		    this.mobile = att_mobile;
+		  }
+  
+			/**
+			 *设置性别(gender)字段方法 
+			 *@return  返回 <b>AgPatientInfo.Gender</b>的值
+			 */	 
+			@Column(name = "gender" ) 
+			public String getGender(){
+			    return this.gender;
+			}
+
+		  /**
+		   *设置 gender字段方法 
+		   *@param att_gender 输入<b>AgPatientInfo.gender</b>字段的值
+		   */
+		  public void setGender(String att_gender){
+		    this.gender = att_gender;
+		  }
+  
+			/**
+			 *设置年龄(age)字段方法 
+			 *@return  返回 <b>AgPatientInfo.Age</b>的值
+			 */	 
+			@Column(name = "age" ) 
+			public String getAge(){
+			    return this.age;
+			}
+
+		  /**
+		   *设置 age字段方法 
+		   *@param att_age 输入<b>AgPatientInfo.age</b>字段的值
+		   */
+		  public void setAge(String att_age){
+		    this.age = att_age;
+		  }
+  
+			/**
+			 *设置来源:上级业务员ID(source)字段方法 
+			 *@return  返回 <b>AgPatientInfo.Source</b>的值
+			 */	 
+			@Column(name = "source" ) 
+			public Integer getSource(){
+			    return this.source;
+			}
+
+		  /**
+		   *设置 source字段方法 
+		   *@param att_source 输入<b>AgPatientInfo.source</b>字段的值
+		   */
+		  public void setSource(Integer att_source){
+		    this.source = att_source;
+		  }
+  
+			/**
+			 *设置银行名称(bank_name)字段方法 
+			 *@return  返回 <b>AgPatientInfo.BankName</b>的值
+			 */	 
+			@Column(name = "bank_name" ) 
+			public String getBankName(){
+			    return this.bankName;
+			}
+
+		  /**
+		   *设置 bank_name字段方法 
+		   *@param att_bankName 输入<b>AgPatientInfo.bankName</b>字段的值
+		   */
+		  public void setBankName(String att_bankName){
+		    this.bankName = att_bankName;
+		  }
+  
+			/**
+			 *设置银行账户名称(bank_account_name)字段方法 
+			 *@return  返回 <b>AgPatientInfo.BankAccountName</b>的值
+			 */	 
+			@Column(name = "bank_account_name" ) 
+			public String getBankAccountName(){
+			    return this.bankAccountName;
+			}
+
+		  /**
+		   *设置 bank_account_name字段方法 
+		   *@param att_bankAccountName 输入<b>AgPatientInfo.bankAccountName</b>字段的值
+		   */
+		  public void setBankAccountName(String att_bankAccountName){
+		    this.bankAccountName = att_bankAccountName;
+		  }
+  
+			/**
+			 *设置银行账号(bank_account_number)字段方法 
+			 *@return  返回 <b>AgPatientInfo.BankAccountNumber</b>的值
+			 */	 
+			@Column(name = "bank_account_number" ) 
+			public String getBankAccountNumber(){
+			    return this.bankAccountNumber;
+			}
+
+		  /**
+		   *设置 bank_account_number字段方法 
+		   *@param att_bankAccountNumber 输入<b>AgPatientInfo.bankAccountNumber</b>字段的值
+		   */
+		  public void setBankAccountNumber(String att_bankAccountNumber){
+		    this.bankAccountNumber = att_bankAccountNumber;
+		  }
+  
+			/**
+			 *设置状态:0正常(status)字段方法 
+			 *@return  返回 <b>AgPatientInfo.Status</b>的值
+			 */	 
+			@Column(name = "status" ) 
+			public String getStatus(){
+			    return this.status;
+			}
+
+		  /**
+		   *设置 status字段方法 
+		   *@param att_status 输入<b>AgPatientInfo.status</b>字段的值
+		   */
+		  public void setStatus(String att_status){
+		    this.status = att_status;
+		  }
+  
+			/**
+			 *设置创建人(create_ren)字段方法 
+			 *@return  返回 <b>AgPatientInfo.CreateRen</b>的值
+			 */	 
+			@Column(name = "create_ren" ) 
+			public String getCreateRen(){
+			    return this.createRen;
+			}
+
+		  /**
+		   *设置 create_ren字段方法 
+		   *@param att_createRen 输入<b>AgPatientInfo.createRen</b>字段的值
+		   */
+		  public void setCreateRen(String att_createRen){
+		    this.createRen = att_createRen;
+		  }
+  
+			/**
+			 *设置创建时间(create_date)字段方法 
+			 *@return  返回 <b>AgPatientInfo.CreateDate</b>的值
+			 */	 
+			@Temporal(TemporalType.TIMESTAMP)
+			@Column(name = "create_date" ) 
+			public Date getCreateDate(){
+			    return this.createDate;
+			}
+
+		  /**
+		   *设置 create_date字段方法 
+		   *@param att_createDate 输入<b>AgPatientInfo.createDate</b>字段的值
+		   */
+		  public void setCreateDate(Date att_createDate){
+		    this.createDate = att_createDate;
+		  }
+  
+			/**
+			 *设置修改人(edit_ren)字段方法 
+			 *@return  返回 <b>AgPatientInfo.EditRen</b>的值
+			 */	 
+			@Column(name = "edit_ren" ) 
+			public String getEditRen(){
+			    return this.editRen;
+			}
+
+		  /**
+		   *设置 edit_ren字段方法 
+		   *@param att_editRen 输入<b>AgPatientInfo.editRen</b>字段的值
+		   */
+		  public void setEditRen(String att_editRen){
+		    this.editRen = att_editRen;
+		  }
+  
+			/**
+			 *设置修改时间(edit_date)字段方法 
+			 *@return  返回 <b>AgPatientInfo.EditDate</b>的值
+			 */	 
+			@Temporal(TemporalType.TIMESTAMP)
+			@Column(name = "edit_date" ) 
+			public Date getEditDate(){
+			    return this.editDate;
+			}
+
+		  /**
+		   *设置 edit_date字段方法 
+		   *@param att_editDate 输入<b>AgPatientInfo.editDate</b>字段的值
+		   */
+		  public void setEditDate(Date att_editDate){
+		    this.editDate = att_editDate;
+		  }
+		  
+		  /**
+		   * 获取 一级业务员手机号
+		   * @return
+		   */
+		  @Column(name = "scene_Mobile" ) 
+			public String getSceneMobile() {
+				return sceneMobile;
+			}
+/**
+ *  设置 一级业务员手机号
+ * @param sceneMobile
+ */
+			public void setSceneMobile(String sceneMobile) {
+				this.sceneMobile = sceneMobile;
+			}
+  
+
+///===============数据库表字段属性end==========
+			/**
+			 * 微信昵称
+			 */
+			private String wechatName;
+			/**
+			 * 患者姓名或手机号
+			 */
+			private String patientNameOrMobile;
+			private String avatar;
+			
+			@Formula("(SELECT a.avatar FROM ag_wechat_info a WHERE a.wechat_user_id= wechat_user_id  )")
+			public String getAvatar() {
+				return avatar;
+			}
+
+			public void setAvatar(String avatar) {
+				this.avatar = avatar;
+			}
+
+			/**
+			  * 获取 患者姓名或手机号
+			  * @return
+			  */
+			@Transient
+			public String getPatientNameOrMobile() {
+				return patientNameOrMobile;
+			}
+			/**
+			 * 设置 患者姓名或手机号
+			 * @param patientNameOrMobile
+			 */
+			public void setPatientNameOrMobile(String patientNameOrMobile) {
+				this.patientNameOrMobile = patientNameOrMobile;
+			}
+
+			/**
+			 * 获取微信昵称
+			 * 
+			 * @return
+			 */
+			@Formula("(SELECT a.wechat_name FROM ag_wechat_info a WHERE a.wechat_user_id= wechat_user_id  )")
+			public String getWechatName() {
+				return wechatName;
+			}
+		
+			/**
+			 * 设置微信昵称
+			 * 
+			 * @param wechatName
+			 */
+			public void setWechatName(String wechatName) {
+				this.wechatName = wechatName;
+			}
+			@Temporal(TemporalType.TIMESTAMP)
+			@Column(name = "last_deal_date" ) 
+			public Date getLastDealDate() {
+				return lastDealDate;
+			}
+
+			public void setLastDealDate(Date lastDealDate) {
+				this.lastDealDate = lastDealDate;
+			}
+			
+			
+			
+			
+			///===============数据库表无关子段字段属性begin==========
+			/**
+			 *患者ID(patient_id):字段类型为String
+			 */
+		  private String patientId_str;  
+			/**
+			 *微信ID(wechat_user_id):字段类型为String
+			 */
+		  private String wechatUserId_str;  
+			/**
+			 *来源:上级业务员ID(source):字段类型为String
+			 */
+		  private String source_str;  
+			/**
+			 *创建时间(create_date):字段类型为Date
+			 */
+		  private Date createDate_start;  
+			/**
+			 *创建时间(create_date):字段类型为Date
+			 */
+		  private Date createDate_end;  
+		  
+		  private Date lastDealDate_start;
+		  private Date lastDealDate_end;
+			/**
+			 *修改时间(edit_date):字段类型为Date
+			 */
+		  private Date editDate_start;  
+			/**
+			 *修改时间(edit_date):字段类型为Date
+			 */
+		  private Date editDate_end;  
+			/**
+			 *():字段类型为String
+			 *ag_patient_info表里不用like作为条件的字符串
+			 */
+		  private String Tab_like;  
+			/**
+			 *():字段类型为String
+			 *ag_patient_info表里order by 字符串
+			 */
+		  private String Tab_order;  
+			/**
+			 *设置patientId字段方法  
+			 *@return  返回 <b>AgPatientInfo.patientId</b>的值
+			 */ 
+			@Transient
+			public String getPatientId_str(){
+				return this.patientId_str;
+			}
+			/**
+			  *设置 patient_id字段方法 
+			  *@param att_patientId 输入<b>AgPatientInfo.patientId</b>字段的值
+			  */
+			public void setPatientId_str(String att_patientId_str){
+				this.patientId_str = att_patientId_str;
+			}
+			/**
+			 *设置wechatUserId字段方法  
+			 *@return  返回 <b>AgPatientInfo.wechatUserId</b>的值
+			 */ 
+			@Transient
+			public String getWechatUserId_str(){
+				return this.wechatUserId_str;
+			}
+			/**
+			  *设置 wechat_user_id字段方法 
+			  *@param att_wechatUserId 输入<b>AgPatientInfo.wechatUserId</b>字段的值
+			  */
+			public void setWechatUserId_str(String att_wechatUserId_str){
+				this.wechatUserId_str = att_wechatUserId_str;
+			}
+			/**
+			 *设置source字段方法  
+			 *@return  返回 <b>AgPatientInfo.source</b>的值
+			 */ 
+			@Transient
+			public String getSource_str(){
+				return this.source_str;
+			}
+			/**
+			  *设置 source字段方法 
+			  *@param att_source 输入<b>AgPatientInfo.source</b>字段的值
+			  */
+			public void setSource_str(String att_source_str){
+				this.source_str = att_source_str;
+			}
+			/**
+			 *设置createDate字段方法  
+			 *@return  返回 <b>AgPatientInfo.createDate</b>的值
+			 */ 
+			@Transient
+			public Date getCreateDate_start(){
+				return this.createDate_start;
+			}
+			/**
+			  *设置 create_date字段方法 
+			  *@param att_createDate 输入<b>AgPatientInfo.createDate</b>字段的值
+			  */
+			public void setCreateDate_start(Date att_createDate_start){
+				this.createDate_start = att_createDate_start;
+			}
+			/**
+			 *设置createDate字段方法  
+			 *@return  返回 <b>AgPatientInfo.createDate</b>的值
+			 */ 
+			@Transient
+			public Date getCreateDate_end(){
+				return this.createDate_end;
+			}
+			/**
+			  *设置 create_date字段方法 
+			  *@param att_createDate 输入<b>AgPatientInfo.createDate</b>字段的值
+			  */
+			public void setCreateDate_end(Date att_createDate_end){
+				this.createDate_end = att_createDate_end;
+			}
+			@Transient
+			public Date getLastDealDate_start() {
+				return lastDealDate_start;
+			}
+
+			public void setLastDealDate_start(Date lastDealDate_start) {
+				this.lastDealDate_start = lastDealDate_start;
+			}
+			@Transient
+			public Date getLastDealDate_end() {
+				return lastDealDate_end;
+			}
+
+			public void setLastDealDate_end(Date lastDealDate_end) {
+				this.lastDealDate_end = lastDealDate_end;
+			}
+
+			/**
+			 *设置editDate字段方法  
+			 *@return  返回 <b>AgPatientInfo.editDate</b>的值
+			 */ 
+			@Transient
+			public Date getEditDate_start(){
+				return this.editDate_start;
+			}
+			/**
+			  *设置 edit_date字段方法 
+			  *@param att_editDate 输入<b>AgPatientInfo.editDate</b>字段的值
+			  */
+			public void setEditDate_start(Date att_editDate_start){
+				this.editDate_start = att_editDate_start;
+			}
+			/**
+			 *设置editDate字段方法  
+			 *@return  返回 <b>AgPatientInfo.editDate</b>的值
+			 */ 
+			@Transient
+			public Date getEditDate_end(){
+				return this.editDate_end;
+			}
+			/**
+			  *设置 edit_date字段方法 
+			  *@param att_editDate 输入<b>AgPatientInfo.editDate</b>字段的值
+			  */
+			public void setEditDate_end(Date att_editDate_end){
+				this.editDate_end = att_editDate_end;
+			}
+			/**
+			 *设置tab_like字段方法  
+			 *@return  返回 <b>AgPatientInfo.tab_like</b>的值
+			 */ 
+			@Transient
+			public String getTab_like(){
+				return this.Tab_like;
+			}
+			/**
+			  *设置 字段方法 
+			  *@param att_tab_like 输入<b>AgPatientInfo.tab_like</b>字段的值
+			  */
+			public void setTab_like(String att_Tab_like){
+				this.Tab_like = att_Tab_like;
+			}
+			/**
+			 *设置tab_order字段方法  
+			 *@return  返回 <b>AgPatientInfo.tab_order</b>的值
+			 */ 
+			@Transient
+			public String getTab_order(){
+				return this.Tab_order;
+			}
+			/**
+			  *设置 字段方法 
+			  *@param att_tab_order 输入<b>AgPatientInfo.tab_order</b>字段的值
+			  */
+			public void setTab_order(String att_Tab_order){
+				this.Tab_order = att_Tab_order;
+			}
+///===============数据库表无关子段字段属性end==========
+			
+			private Integer id;
+			private Double consumeCount;
+			private Integer evaluationsCount;
+			private String imCode;//环信账号
+			
+			@Transient
+			public String getImCode() {
+				imCode=CommonUtil.IM_PAT_PRE+patientId;
+				return imCode;
+			}
+
+			public void setImCode(String imCode) {
+				this.imCode = imCode;
+			}
+
+			@Transient
+			public Double getConsumeCount() {
+				return consumeCount;
+			}
+
+			public void setConsumeCount(Double consumeCount) {
+				this.consumeCount = consumeCount;
+			}
+
+			@Transient
+			public Integer getId() {
+				return patientId;
+			}
+
+			public void setId(Integer id) {
+				this.patientId=id;
+			}
+			@Formula("(SELECT count(1) FROM ag_evaluate_info a WHERE a.order_patient_id=patient_id and a.status=0)")
+			public Integer getEvaluationsCount() {
+				return evaluationsCount;
+			}
+
+			public void setEvaluationsCount(Integer evaluationsCount) {
+				this.evaluationsCount = evaluationsCount;
+			}
+} 

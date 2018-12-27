@@ -1,0 +1,661 @@
+package com.hsk.angeldoctor.web.finance.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hsk.angeldoctor.api.persistence.AgBusinessUser;
+import com.hsk.angeldoctor.api.persistence.AgDealView;
+import com.hsk.angeldoctor.api.persistence.AgDepartmentInfo;
+import com.hsk.angeldoctor.api.persistence.AgDoctorInfo;
+import com.hsk.angeldoctor.api.persistence.AgEvaluateInfo;
+import com.hsk.angeldoctor.api.persistence.AgFeedbackInfo;
+import com.hsk.angeldoctor.api.persistence.AgHospitalInfo;
+import com.hsk.angeldoctor.api.persistence.AgInformationInfo;
+import com.hsk.angeldoctor.api.persistence.AgIntegralInfo;
+import com.hsk.angeldoctor.api.persistence.AgMoneyCount;
+import com.hsk.angeldoctor.api.persistence.AgOrderInfo;
+import com.hsk.angeldoctor.api.persistence.AgPatientInfo;
+import com.hsk.angeldoctor.api.persistence.AgWechatInfo;
+import com.hsk.angeldoctor.api.persistence.AgWorkView;
+import com.hsk.angeldoctor.web.agent.service.IAgBusinessUserService;
+import com.hsk.angeldoctor.web.hospital.service.IAgDepartmentInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgDoctorInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgHospitalInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgWorkInfoService;
+import com.hsk.angeldoctor.web.integral.service.IAgIntegralInfoService;
+import com.hsk.angeldoctor.web.operate.service.IAgEvaluateInfoService;
+import com.hsk.angeldoctor.web.operate.service.IAgFeedbackInfoService;
+import com.hsk.angeldoctor.web.operate.service.IAgInformationInfoService;
+import com.hsk.angeldoctor.web.order.service.IAgDealInfoService;
+import com.hsk.angeldoctor.web.order.service.IAgMoneyCountService;
+import com.hsk.angeldoctor.web.order.service.IAgOrderInfoService;
+import com.hsk.angeldoctor.web.order.service.IAgPatientInfoService;
+import com.hsk.angeldoctor.web.order.service.IAgWechatInfoService;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.controller.imp.DSTController;
+import com.hsk.xframe.api.utils.freeMarker.CommonUtil;
+import com.hsk.xframe.api.utils.freeMarker.RandomCodeUtils;
+import com.hsk.xframe.api.utils.freeMarker.SendSms;
+@Controller
+public class WechatOperateController extends DSTController{
+	
+	@Autowired
+	private IAgPatientInfoService agPatientInfoService;
+	@Autowired
+	protected IAgWechatInfoService agWechatInfoService;
+	@Autowired
+	private IAgHospitalInfoService agHospitalInfoService;
+	/**
+	  * 科室管理业务类 
+	  */
+	@Autowired
+	private IAgDepartmentInfoService agDepartmentInfoService;
+	/**
+	 * 医生管理业务类
+	 */
+	@Autowired
+	private	IAgDoctorInfoService  agDoctorInfoService;
+	@Autowired
+	private IAgWorkInfoService agWorkInfoService;
+	@Autowired
+	private IAgOrderInfoService agOrderInfoService;
+	@Autowired
+	private IAgInformationInfoService agInformationInfoService;
+	@Autowired
+	private IAgIntegralInfoService agIntegralInfoService;
+	@Autowired
+	private IAgMoneyCountService agMoneyCountService;
+	@Autowired
+	private IAgDealInfoService agDealInfoService;
+	@Autowired
+	private IAgEvaluateInfoService agEvaluateInfoService;
+	@Autowired
+	private IAgFeedbackInfoService agFeedbackInfoService;
+	@Autowired
+	private IAgBusinessUserService agBusinessUserService;
+	
+	/**
+	 * 发送验证码
+	 * @param request
+	 * @param response
+	 * @param mobile
+	 * @param code
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/sendCode.htm")
+	public void sendCode(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgPatientInfo agPatientInfo = this.getLoginAgPatientInfo(request);
+		if(agPatientInfo==null){
+			srm.setCode(0l);
+			srm.setMeg("请先绑定患者手机号!");
+		}else{
+			String code=RandomCodeUtils.getRandomData(6);
+			boolean flag=SendSms.sendSmsVerification(agPatientInfo.getMobile(), code);
+			if(!flag){
+				srm.setCode(0l);
+				srm.setMeg("短信发送失败!");
+			}else{
+				//将验证码信息写入缓存中
+				CommonUtil.addSmsMap(agPatientInfo.getMobile(), code);
+				srm.setCode(1l);
+				srm.setMeg("短信发送成功!");
+			}
+		}
+		
+		
+		
+		returnData(response,srm);
+	}
+	/**
+	 * 查看当前用户是否绑定手机
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/checkUserPhone.htm")
+	public void checkUserPhone(HttpServletRequest request,HttpServletResponse response) throws Exception {
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgPatientInfo agPatientInfo = this.getLoginAgPatientInfo(request);
+		if(agPatientInfo==null){
+			srm.setObj(false);
+		}else
+			srm.setObj(true);
+		returnData(response,srm);
+	}
+	/**
+	 * 绑定手机与修改信息
+	 * @param request
+	 * @param response
+	 * @param mobile
+	 * @param code
+	 * @param name
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/buildingPhone.htm")
+	public void buildingPhone(HttpServletRequest request,HttpServletResponse response,String mobile,String code,String name) throws Exception {
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		if(CommonUtil.getSmsCode(mobile, code)){
+			AgPatientInfo agPatientInfo = this.getLoginAgPatientInfo(request);
+			if(agPatientInfo==null){
+				AgWechatInfo agWechatInfo = this.getLoginWechatUser(request);
+				//查询该姓名及手机号是否已经存在患者信息
+				agPatientInfo = agPatientInfoService.fingAgPatientInfoByNameAndPhone(name, mobile);
+				if(agPatientInfo!=null && agPatientInfo.getPatientId()!=null){
+					agPatientInfo.setWechatUserId(agWechatInfo.getWechatUserId());
+				}else{
+					agPatientInfo.setWechatUserId(agWechatInfo.getWechatUserId());
+					agPatientInfo.setName(name);
+					agPatientInfo.setMobile(mobile);
+				}
+				if(agWechatInfo.getSceneId()!=null){
+					AgBusinessUser user=agBusinessUserService.findObject(agWechatInfo.getSceneId());
+					if(user.getTopPrimaryAgentId()!=null){
+						AgBusinessUser top=agBusinessUserService.findObject(user.getTopPrimaryAgentId());
+						agPatientInfo.setSceneMobile(top.getMobile());
+					}else{
+						agPatientInfo.setSceneMobile(user.getMobile());
+					}
+				}
+			}else{
+				agPatientInfo.setName(name);
+				agPatientInfo.setMobile(mobile);
+			}
+			srm = agPatientInfoService.saveOrUpdateObject(agPatientInfo);
+		}else{
+			srm.setCode(0l);
+			srm.setMeg("请获取验证码!");
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 更新患者信息
+	 * @param request
+	 * @param response
+	 * @param gender
+	 * @param age
+	 * @param name
+	 * @param avatarMediaId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/updateUserByWx.htm")
+	public void updateUserByWx(HttpServletRequest request,HttpServletResponse response,String gender,String age,String name,String avatarMediaId) throws Exception {
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgPatientInfo agPatientInfo = this.getLoginAgPatientInfo(request);
+		if(agPatientInfo==null){
+			srm.setCode(0l);
+			srm.setMeg("请先绑定患者手机号!");
+		}else{
+			agPatientInfo.setName(name);
+			agPatientInfo.setGender(gender);
+			agPatientInfo.setAge(age);
+			agPatientInfoService.saveOrUpdateObject(agPatientInfo);
+			AgWechatInfo agWechatInfo = this.getLoginWechatUser(request);
+			agWechatInfo.setAvatarMediaId(avatarMediaId);
+			agWechatInfoService.saveOrUpdateObject(agWechatInfo);
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 获取医院列表
+	 * @param request
+	 * @param response
+	 * @param att_AgHospitalInfo
+	 * @param createDateStart
+	 * @param createDateEnd
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/getHospitalListByName.htm")
+	public void getHospitalListByName(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgHospitalInfo att_AgHospitalInfo,String sort) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agHospitalInfoService.setRequest(request);
+		//设置like字段
+		att_AgHospitalInfo.setTab_like("name");
+		String latitude = att_AgHospitalInfo.getLatitude();
+		String longitude = att_AgHospitalInfo.getLongitude();
+		att_AgHospitalInfo.setLatitude(null);
+		att_AgHospitalInfo.setLongitude(null);
+		srm.setObj(agHospitalInfoService.getPagerModelObject(att_AgHospitalInfo,latitude,longitude,sort));
+		returnData(response,srm);
+	}
+	/**
+	 * 根据医生名称获取医院列表
+	 * @param request
+	 * @param response
+	 * @param provId
+	 * @param cityId
+	 * @param latitude
+	 * @param longitude
+	 * @param name
+	 * @param organizationType
+	 * @param medicalInsurance
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/getHospitalListByDocName.htm")
+	public void getHospitalListByDocName(HttpServletRequest request ,HttpServletResponse response,String provId,String cityId,String latitude,String longitude,String name,String organizationType,Integer medicalInsurance,String sort) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agHospitalInfoService.setRequest(request);
+		AgHospitalInfo att_AgHospitalInfo=new AgHospitalInfo();
+		att_AgHospitalInfo.setProvId(provId);
+		att_AgHospitalInfo.setCityId(cityId);
+		att_AgHospitalInfo.setOrganizationType(organizationType);
+		att_AgHospitalInfo.setMedicalInsurance(medicalInsurance);
+		srm.setObj(agHospitalInfoService.getPagerModelByDocName(att_AgHospitalInfo, name,latitude,longitude,sort));
+		returnData(response,srm);
+	}
+	/**
+	 * 根据科室名称获取医院列表
+	 * @param request
+	 * @param response
+	 * @param provId
+	 * @param cityId
+	 * @param latitude
+	 * @param longitude
+	 * @param name
+	 * @param organizationType
+	 * @param medicalInsurance
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/getHospitalListByDepName.htm")
+	public void getHospitalListByDepName(HttpServletRequest request ,HttpServletResponse response,String provId,String cityId,String latitude,String longitude,String name,String organizationType,Integer medicalInsurance,String sort) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agHospitalInfoService.setRequest(request);
+		AgHospitalInfo att_AgHospitalInfo=new AgHospitalInfo();
+		att_AgHospitalInfo.setProvId(provId);
+		att_AgHospitalInfo.setCityId(cityId);
+		att_AgHospitalInfo.setOrganizationType(organizationType);
+		att_AgHospitalInfo.setMedicalInsurance(medicalInsurance);
+		srm.setObj(agHospitalInfoService.getPagerModelByDepName(att_AgHospitalInfo, name,latitude,longitude,sort));
+		returnData(response,srm);
+	}
+	/**
+	 * 根据查询条件查询医院省市列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/provAndCityList.htm")
+	public void provAndCityList(HttpServletRequest request ,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agHospitalInfoService.setRequest(request);
+		srm.setObj(agHospitalInfoService.getProvAndCityList());
+		returnData(response,srm);
+	}
+	/**
+	 * 获取医院信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/hospitalInfo.htm")
+	public void hospitalInfo(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agHospitalInfoService.setRequest(request);
+		SysRetrunMessage srm=agHospitalInfoService.findFormObject(id);
+		returnData(response,srm);
+	}
+	/**
+	 * 根据医院ID查询科室列表
+	 * @param request
+	 * @param response
+	 * @param organizationId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/departList.htm")
+	public void departList(HttpServletRequest request,HttpServletResponse response,Integer organizationId) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agDepartmentInfoService.setRequest(request);
+		AgDepartmentInfo att_AgDepartmentInfo = new AgDepartmentInfo();
+		att_AgDepartmentInfo.setOrganizationId(organizationId);
+		srm.setObj(agDepartmentInfoService.getAgDepartmentInfoList(att_AgDepartmentInfo));
+		returnData(response, srm);
+	}
+	/**
+	 * 根据科室ID查询医生列表
+	 * @param request
+	 * @param response
+	 * @param departmentId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/doctorList.htm")
+	public void doctorList(HttpServletRequest request,HttpServletResponse response,Integer departmentId) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agDoctorInfoService.setRequest(request);
+		AgDoctorInfo att_AgDoctorInfo = new AgDoctorInfo();
+		att_AgDoctorInfo.setDepartmentId(","+departmentId+",");
+		att_AgDoctorInfo.setTab_like("departmentId");	
+		srm.setObj(agDoctorInfoService.getAgDoctorInfoList(att_AgDoctorInfo));
+		returnData(response, srm);
+	}
+	/**
+	 * 根据医生ID条件查询医生详细信息
+	 * @param request
+	 * @param response
+	 * @param id  医生id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/doctorInfo.htm")
+	public void doctorInfo(HttpServletRequest request,HttpServletResponse response, Integer id) throws Exception {
+		agDoctorInfoService.setRequest(request); 
+		SysRetrunMessage srm=agDoctorInfoService.findFormObject(id);	
+		returnData(response,srm);
+	}
+	/**
+	 * 排班列表查询
+	 * @param request
+	 * @param response
+	 * @param departmentId
+	 * @param doctorId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/workInfoList.htm")
+	public void workInfoList(HttpServletRequest request,HttpServletResponse response, Integer departmentId,Integer doctorId) throws Exception {
+		agWorkInfoService.setRequest(request); 
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgWorkView att_AgWorkView = new AgWorkView();
+		att_AgWorkView.setDepartmentId(departmentId);
+		att_AgWorkView.setDoctorId(doctorId);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) - 1);     
+		String searchStart = sdf.format(cal.getTime());
+		//2周后的今天
+		cal.setTime(now);
+		cal.add(cal.DATE,14);
+		String searchEnd = sdf.format(cal.getTime());
+		att_AgWorkView.setShiftEnd_start(searchStart);
+		att_AgWorkView.setShiftEnd_end(searchEnd);
+		List<AgWorkView> reList = agWorkInfoService.getAgWorkViewList(att_AgWorkView);
+		Map<String,Object> reMap= new HashMap<String,Object>();
+		reMap.put("plans", reList);
+		Map<String,Object> infoMap =  new HashMap<String,Object>();
+		if(reList != null && reList.size() >0){
+			AgWorkView agWorkView =reList.get(0);
+			infoMap.put("organizationId", agWorkView.getOrganizationId());
+			infoMap.put("departmentName", agWorkView.getDepartmentName());
+			infoMap.put("organizationName", agWorkView.getOrganizationName());
+			infoMap.put("doctorName", agWorkView.getDoctorName());
+			infoMap.put("actualCount", agWorkView.getActualCount());
+			infoMap.put("planCount", agWorkView.getPlanCount());
+		}
+		reMap.put("info", infoMap);
+		srm.setObj(reMap);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 创建预约信息
+	 * @param request
+	 * @param response
+	 * @param att_AgOrderInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/saveOrder.htm")
+	public void saveOrder(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgOrderInfo att_AgOrderInfo) throws Exception{
+		agOrderInfoService.setRequest(request);
+		att_AgOrderInfo.setAgentId(this.getLoginAgPatientInfo(request).getPatientId());
+		att_AgOrderInfo.setRegisterType("1");
+		//设置预约人姓名
+		att_AgOrderInfo.setOutpatientName(this.getLoginAgPatientInfo(request).getName());
+		if(att_AgOrderInfo.getPatientMobile()==null || att_AgOrderInfo.getPatientMobile().trim().equals(""))
+			att_AgOrderInfo.setPatientMobile(this.getLoginAgPatientInfo(request).getMobile());
+		SysRetrunMessage srm=agOrderInfoService.saveAppyInfo(att_AgOrderInfo);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 取消待约信息
+	 * @param request
+	 * @param response
+	 * @param registrationId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/cancelOrder.htm")
+	public void cancelOrder(HttpServletRequest request ,HttpServletResponse response,Integer registrationId) throws Exception{
+		agOrderInfoService.setRequest(request);
+		AgOrderInfo agOrderInfo = agOrderInfoService.findObject(registrationId);
+		agOrderInfo.setOutpatientStatus("3");
+		agOrderInfo.setRegisterStatus("2");
+		SysRetrunMessage srm=agOrderInfoService.saveOrUpdateObject(agOrderInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取资讯列表
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/informationList.htm")
+	public void informationList(HttpServletRequest request ,HttpServletResponse response ,String type) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agInformationInfoService.setRequest(request);
+		AgInformationInfo att_AgInformationInfo = new AgInformationInfo();
+		att_AgInformationInfo.setType(type);
+		att_AgInformationInfo.setStatus("0");
+		srm.setObj(agInformationInfoService.getPagerModelObject(att_AgInformationInfo));
+		returnData(response,srm);
+	}
+	/**
+	 * 跟新阅读量
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wecaht/updateInformationRead.htm")
+	public void updateInformationRead(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agInformationInfoService.setRequest(request);
+		AgInformationInfo att_AgInformationInfo = agInformationInfoService.findObject(id);
+		if(att_AgInformationInfo.getPageRead()!=null)
+			att_AgInformationInfo.setPageRead(att_AgInformationInfo.getPageRead()+1);
+		else
+			att_AgInformationInfo.setPageRead(1);
+		SysRetrunMessage srm=agInformationInfoService.saveOrUpdateObject(att_AgInformationInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 分享文章获得积分
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wecaht/shareInteg.htm")
+	public void shareInteg(HttpServletRequest request ,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		Integer userId=this.getLoginAgPatientInfo(request).getPatientId();
+		AgIntegralInfo agIntegralInfo = new AgIntegralInfo();
+		agIntegralInfo.setSuiId(userId);
+		agIntegralInfo.setUserType("2");
+		srm = agIntegralInfoService.addShareIntegral(agIntegralInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 根据openId获取个人信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/getUserInfo.htm")
+	public void getUserInfo(HttpServletRequest request ,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		Map<String,Object> reMap = new HashMap<String,Object>();
+		AgPatientInfo agPatientInfo = this.getLoginAgPatientInfo(request);
+		AgWechatInfo agWechatInfo = this.getLoginWechatUser(request);
+		if(agPatientInfo!=null){
+			reMap.put("id", agPatientInfo.getPatientId());
+			reMap.put("name", agPatientInfo.getName());
+			reMap.put("mobile", agPatientInfo.getMobile());
+			reMap.put("createDate", agPatientInfo.getCreateDate());
+			reMap.put("gender", agPatientInfo.getGender());
+			reMap.put("age", agPatientInfo.getAge());
+			reMap.put("source", agPatientInfo.getSource());
+			reMap.put("bankName", agPatientInfo.getBankName());
+			reMap.put("accountName", agPatientInfo.getBankAccountName());
+			reMap.put("accountNumber", agPatientInfo.getBankAccountNumber());
+			//积分
+			agMoneyCountService.setRequest(request);
+			AgMoneyCount agMoneyCount = new AgMoneyCount();
+			agMoneyCount.setSuiId(agPatientInfo.getPatientId());
+			agMoneyCount.setAmcType("4");
+			agMoneyCount = agMoneyCountService.getAgMoneyCount(agMoneyCount);
+			reMap.put("accumulatePoints", agMoneyCount.getIntegralCount()!=null?agMoneyCount.getIntegralCount():0);
+		}else{
+			reMap.put("id", null);
+			reMap.put("name","");
+			reMap.put("mobile", "");
+			reMap.put("createDate", "");
+			reMap.put("gender", "");
+			reMap.put("age", "");
+			reMap.put("source", "");
+			reMap.put("bankName", "");
+			reMap.put("accountName", "");
+			reMap.put("accountNumber", "");
+			reMap.put("accumulatePoints",0);
+		}
+		reMap.put("wechatUserId", agWechatInfo.getWechatUserId());
+		reMap.put("openId", agWechatInfo.getOpenId());
+		reMap.put("avatar", agWechatInfo.getAvatar());
+		reMap.put("avatarMediaId", agWechatInfo.getAvatarMediaId());
+		
+		srm.setObj(reMap);
+		returnData(response,srm);
+	}
+	/**
+	 * 更新个人银行卡信息
+	 * @param request
+	 * @param response
+	 * @param gender
+	 * @param age
+	 * @param name
+	 * @param avatarMediaId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/updateBank.htm")
+	public void updateBank(HttpServletRequest request,HttpServletResponse response,String bankName,String accountName,String accountNumber) throws Exception {
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		AgPatientInfo agPatientInfo = this.getLoginAgPatientInfo(request);
+		if(agPatientInfo==null){
+			srm.setCode(0l);
+			srm.setMeg("请先绑定患者手机号!");
+		}else{
+			agPatientInfo.setBankName(bankName);
+			agPatientInfo.setBankAccountName(accountName);
+			agPatientInfo.setBankAccountNumber(accountNumber);
+			agPatientInfoService.saveOrUpdateObject(agPatientInfo);
+		}
+		returnData(response,srm);
+	}
+	/**
+	 * 业务员获取自己的预约列表
+	 * @param request
+	 * @param response
+	 * @param outpatientStatus
+	 * @param registerStatus
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/getOrderList.htm")
+	public void getOrderList(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm=new SysRetrunMessage(1l);
+		agDealInfoService.setRequest(request);
+		AgDealView agDealView = new AgDealView();
+		agDealView.setRegisterType("1");
+		agDealView.setAgentId(this.getLoginAgPatientInfo(request).getPatientId());
+		srm.setObj(agDealInfoService.getPagerAgDealView(agDealView));
+		returnData(response,srm);
+	}
+	/**
+	 * 增加评价信息
+	 * @param request
+	 * @param response
+	 * @param att_AgEvaluateInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/addEvaluateInfo.htm")
+	public void addEvaluateInfo(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgEvaluateInfo att_AgEvaluateInfo) throws Exception{
+		agEvaluateInfoService.setRequest(request);
+		att_AgEvaluateInfo.setPatientId(this.getLoginAgPatientInfo(request).getPatientId());
+		att_AgEvaluateInfo.setReplied("0");
+		att_AgEvaluateInfo.setStatus("0");
+		att_AgEvaluateInfo.setCreateDate(new Date());
+		//查询流水号 agOrderInfoService
+		AgOrderInfo agOrderInfo = agOrderInfoService.findObject(att_AgEvaluateInfo.getMedicalRecordId());
+		att_AgEvaluateInfo.setSerialNumber(agOrderInfo.getSerialNumber());
+		att_AgEvaluateInfo.setOrderPatientId(agOrderInfo.getPatientId());
+		SysRetrunMessage srm=agEvaluateInfoService.saveOrUpdateObject(att_AgEvaluateInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取评价详情
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/evaluateInfo.htm")
+	public void evaluateInfo(HttpServletRequest request ,HttpServletResponse response,Integer patientEvaluationId) throws Exception{
+		agEvaluateInfoService.setRequest(request);
+		SysRetrunMessage srm=agEvaluateInfoService.findFormObject(patientEvaluationId);
+		returnData(response,srm);
+	}
+	/**
+	 * 增加反馈信息
+	 * @param request
+	 * @param response
+	 * @param att_AgFeedbackInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/addFeedback.htm")
+	public void addFeedback(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgFeedbackInfo att_AgFeedbackInfo) throws Exception{
+		agFeedbackInfoService.setRequest(request);
+		att_AgFeedbackInfo.setFeedbackType("1");//患者反馈
+		att_AgFeedbackInfo.setUserId(this.getLoginAgPatientInfo(request).getPatientId());
+		//查询流水号 agOrderInfoService
+		AgOrderInfo agOrderInfo = agOrderInfoService.findObject(att_AgFeedbackInfo.getMedicalRecordId());
+		att_AgFeedbackInfo.setSerialNumber(agOrderInfo.getSerialNumber());
+		att_AgFeedbackInfo.setOrderPatientId(agOrderInfo.getPatientId());
+		SysRetrunMessage srm = agFeedbackInfoService.saveOrUpdateObject(att_AgFeedbackInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 查看反馈详情
+	 * @param request
+	 * @param response
+	 * @param patientFeedbackId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/feedbackInfo.htm")
+	public void feedbackInfo(HttpServletRequest request ,HttpServletResponse response,Integer patientFeedbackId) throws Exception{
+		agFeedbackInfoService.setRequest(request);
+		SysRetrunMessage srm=agFeedbackInfoService.findFormObject(patientFeedbackId);
+		returnData(response,srm);
+	}
+	/**
+	 * 获取导医医生记录
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/wechat/getDealDocPager.htm")
+	public void getDealDocPager(HttpServletRequest request ,HttpServletResponse response) throws Exception{
+		SysRetrunMessage srm= new SysRetrunMessage(1l);
+		agDealInfoService.setRequest(request);
+		srm.setObj(agDealInfoService.getDealDocPager(this.getLoginAgPatientInfo(request).getPatientId(), "1"));
+		returnData(response,srm);
+	}
+	
+}

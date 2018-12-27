@@ -1,0 +1,70 @@
+package com.hsk.xframe.api.utils.freeMarker;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+public class CommonUtil {
+	public static String HTTP_URL="http://www.doctorbuy.cn/";
+	public static String HTTP_URL2="http://www.doctorbuy.cn/angeldoctor";
+	public static String HTTP_PRE="http://www.doctorbuy.cn/angeldoctor/wechatreq/";
+	public static String VERSION_PARM_CODE="PAR000000000000001";//业务员版本信息参数编号
+	public static String VERSION_PARM_CODE2="PAR000000000000002";//医生版本信息参数编号
+	public static String QN_ACCESSKEY="0d02DpW7tBPiN3TuZYV7WcxmN1C9aCiNZeW9fp5W";//七牛账号
+	public static String QN_SECRETKEY="7zD3aC6xpvp_DfDZ0LJhjMq6n6nB6UVDbl37C5FZ";//七牛密码
+	public static String QN_BUCKET="hisforce";
+	public static String GD_KEY="19ace4517e9cc07fe04abf6fed5ad60a";//高德地图key
+	
+	public static String SMS_KEY="4131f1a3ec80ca0822d2a332ed0fed8f";//云片网短信KEY
+	
+	public static String IM_ROLE_NAME="前台接待";//需要创建环信用户的角色
+	public static String IM_DOC_PRE="hisforce_platform_user_";//创建医生环信用户的前缀
+	public static String IM_DOC_PASS="HisforceBeershebaPlatformUser";//医生环信用户的密码
+	public static String IM_PAT_PRE="hisforce_patient_";//创建患者环信用户的前缀
+	public static String IM_PAT_PASS="HisforceBeershebaPatient";//患者环信用户的密码
+	public static Map<String,Map<String,String>> SMS_MAP= new HashMap<String,Map<String,String>>();//短信验证码Map
+	public static String HTML_PATH= "/html/";
+	public static String HTML_PATH2= "/fileInfo/updown"+HTML_PATH;
+	/**
+	 * 新增短信验证码
+	 * @param mobile
+	 * @param code
+	 */
+	public static void addSmsMap(String mobile,String code){
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
+		Map<String,String> codeMap = new HashMap<String,String>();
+		codeMap.put("code", code);
+		codeMap.put("createDate", sdf.format(new Date()));
+		SMS_MAP.put(mobile, codeMap);
+	}
+	/**
+	 * 验证短信验证码
+	 * @param mobile
+	 * @param code
+	 * @return true 验证成功 false验证失败
+	 * @throws ParseException 
+	 */
+	public static boolean getSmsCode(String mobile,String code) throws ParseException{
+		boolean reFlag=false;
+		if(SMS_MAP.containsKey(mobile)){
+			Map<String,String> codeMap=SMS_MAP.get(mobile);
+			SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date createDate=sdf.parse(codeMap.get("createDate"));
+			String xcode=codeMap.get("code");
+			Date now = new Date();
+			long minutes=(now.getTime()-createDate.getTime())/(1000*60);
+			if(minutes<=30){
+				if(xcode.equals(code)){
+					reFlag=true;
+					SMS_MAP.remove(mobile);
+				}
+			}else{
+				SMS_MAP.remove(mobile);
+			}
+		}
+		return reFlag;
+	}
+	
+}

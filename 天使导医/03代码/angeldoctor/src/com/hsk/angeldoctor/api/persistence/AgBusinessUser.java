@@ -1,0 +1,1081 @@
+package com.hsk.angeldoctor.api.persistence;
+
+import javax.persistence.*;
+
+import org.hibernate.annotations.Formula;
+
+import static javax.persistence.GenerationType.IDENTITY;
+import java.util.Date;
+
+/**
+ * 根据ag_business_user表结构自动生成持久化对象<B>
+ * com.hsk.angeldoctor.api.persistence.AgBusinessUser</B>
+ * <hr/>
+ * ===============数据库表字段属性==========
+ * <table>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>业务员ID(agentId)</td>
+ * <th>字段类型:</th>
+ * <td>Integer(主键)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>代理商ID(aaiId)</td>
+ * <th>字段类型:</th>
+ * <td>Integer(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>上级代理人ID(parentAgentId)</td>
+ * <th>字段类型:</th>
+ * <td>Integer(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>手机号(mobile)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>代理人类型:1医院内部员工；2一级代理商员工；3二级员工(agentType)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>业务员姓名(name)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>分佣比例(reservedSharePercent)</td>
+ * <th>字段类型:</th>
+ * <td>Double(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>省(reservedProvId)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>市(reservedCityId)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>银行名称(reservedBankName)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>银行账户名称(reservedAccountName)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>银行账号(reservedAccountNumber)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>备注(remark)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>头像(avatar)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>二维码(qrCode)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>状态:1正常，2禁用(status)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>创建人(createRen)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>创建时间(createDate)</td>
+ * <th>字段类型:</th>
+ * <td>Date(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>修改时间(editDate)</td>
+ * <th>字段类型:</th>
+ * <td>Date(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>修改人(editRen)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>初代业务员姓名(top_Primary_Agent_Name)</td>
+ * <th>字段类型:</th>
+ * <td>String(可以为空)</td>
+ * </tr>
+ * </table>
+ * ===============无关字段属性===============
+ * <table>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>业务员ID(agentId)</td>
+ * <th>属性名称:</th>
+ * <td>agentId</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>代理商ID(aaiId)</td>
+ * <th>属性名称:</th>
+ * <td>aaiId</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>上级代理人ID(parentAgentId)</td>
+ * <th>属性名称:</th>
+ * <td>parentAgentId</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>创建时间(createDate)</td>
+ * <th>属性名称:</th>
+ * <td>createDate</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>创建时间(createDate)</td>
+ * <th>属性名称:</th>
+ * <td>createDate</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>修改时间(editDate)</td>
+ * <th>属性名称:</th>
+ * <td>editDate</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>修改时间(editDate)</td>
+ * <th>属性名称:</th>
+ * <td>editDate</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>(tab_like)</td>
+ * <th>属性名称:</th>
+ * <td>tab_like</td>
+ * </tr>
+ * <tr>
+ * <th>字段名称:</th>
+ * <td>(tab_order)</td>
+ * <th>属性名称:</th>
+ * <td>tab_order</td>
+ * </tr>
+ * </table>
+ * <hr/>
+ * 
+ * @author 作者:admin
+ * @version v1.0 创建时间: 2018-08-14 13:31:11
+ */
+
+@SuppressWarnings("serial")
+@Entity
+@Table(name = "ag_business_user")
+public class AgBusinessUser {
+	// /===============数据库表字段属性begin==========
+	/**
+	 * 业务员ID(agentId):字段类型为Integer
+	 */
+	private Integer agentId;
+
+	/**
+	 * 代理商ID(aaiId):字段类型为Integer
+	 */
+	private Integer aaiId;
+
+	/**
+	 * 上级代理人ID(parentAgentId):字段类型为Integer
+	 */
+	private Integer parentAgentId;
+
+	/**
+	 * 手机号(mobile):字段类型为String
+	 */
+	private String mobile;
+
+	/**
+	 * 代理人类型:1医院内部员工；2一级代理商员工；3二级员工(agentType):字段类型为String
+	 */
+	private String agentType;
+
+	/**
+	 * 业务员姓名(name):字段类型为String
+	 */
+	private String name;
+
+	/**
+	 * 银行名称(reservedBankName):字段类型为String
+	 */
+	private String reservedBankName;
+
+	/**
+	 * 银行账户名称(reservedAccountName):字段类型为String
+	 */
+	private String reservedAccountName;
+
+	/**
+	 * 银行账号(reservedAccountNumber):字段类型为String
+	 */
+	private String reservedAccountNumber;
+
+	/**
+	 * 备注(remark):字段类型为String
+	 */
+	private String remark;
+
+	/**
+	 * 头像(avatar):字段类型为String
+	 */
+	private String avatar;
+
+	/**
+	 * 二维码(qrCode):字段类型为String
+	 */
+	private String qrCode;
+
+	/**
+	 * 状态:1正常，2禁用(status):字段类型为String
+	 */
+	private String status;
+
+	/**
+	 * 创建人(createRen):字段类型为String
+	 */
+	private String createRen;
+
+	/**
+	 * 创建时间(createDate):字段类型为Date
+	 */
+	private Date createDate;
+
+	/**
+	 * 修改时间(editDate):字段类型为Date
+	 */
+	private Date editDate;
+
+	/**
+	 * 修改人(editRen):字段类型为String
+	 */
+	private String editRen;
+
+	/**
+	 * 初代业务员 （topPrimaryAgentName） :字段类型为String
+	 */
+	private String topPrimaryAgentName;
+	private Integer topPrimaryAgentId;
+	/**
+	 * 设置业务员ID(agent_id)字段方法 (该字段是主键)
+	 * 
+	 * @return 返回 <b>AgBusinessUser.AgentId</b>的值
+	 */
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "agent_id")
+	public Integer getAgentId() {
+		return this.agentId;
+	}
+
+	/**
+	 * 设置 agent_id字段方法
+	 * 
+	 * @param att_agentId
+	 *            输入<b>AgBusinessUser.agentId</b>字段的值
+	 */
+	public void setAgentId(Integer att_agentId) {
+		this.agentId = att_agentId;
+	}
+
+	/**
+	 * 设置代理商ID(aai_id)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.AaiId</b>的值
+	 */
+	@Column(name = "aai_id")
+	public Integer getAaiId() {
+		return this.aaiId;
+	}
+
+	/**
+	 * 设置 aai_id字段方法
+	 * 
+	 * @param att_aaiId
+	 *            输入<b>AgBusinessUser.aaiId</b>字段的值
+	 */
+	public void setAaiId(Integer att_aaiId) {
+		this.aaiId = att_aaiId;
+	}
+
+	/**
+	 * 设置上级代理人ID(parent_agent_id)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.ParentAgentId</b>的值
+	 */
+	@Column(name = "parent_agent_id")
+	public Integer getParentAgentId() {
+		return this.parentAgentId;
+	}
+
+	/**
+	 * 设置 parent_agent_id字段方法
+	 * 
+	 * @param att_parentAgentId
+	 *            输入<b>AgBusinessUser.parentAgentId</b>字段的值
+	 */
+	public void setParentAgentId(Integer att_parentAgentId) {
+		this.parentAgentId = att_parentAgentId;
+	}
+
+	/**
+	 * 设置手机号(mobile)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.Mobile</b>的值
+	 */
+	@Column(name = "mobile")
+	public String getMobile() {
+		return this.mobile;
+	}
+
+	/**
+	 * 设置 mobile字段方法
+	 * 
+	 * @param att_mobile
+	 *            输入<b>AgBusinessUser.mobile</b>字段的值
+	 */
+	public void setMobile(String att_mobile) {
+		this.mobile = att_mobile;
+	}
+
+	/**
+	 * 设置代理人类型:1医院内部员工；2一级代理商员工；3二级员工(agent_type)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.AgentType</b>的值
+	 */
+	@Column(name = "agent_type")
+	public String getAgentType() {
+		return this.agentType;
+	}
+
+	/**
+	 * 设置 agent_type字段方法
+	 * 
+	 * @param att_agentType
+	 *            输入<b>AgBusinessUser.agentType</b>字段的值
+	 */
+	public void setAgentType(String att_agentType) {
+		this.agentType = att_agentType;
+	}
+
+	/**
+	 * 设置业务员姓名(name)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.Name</b>的值
+	 */
+	@Column(name = "name")
+	public String getName() {
+		return this.name;
+	}
+
+	/**
+	 * 设置 name字段方法
+	 * 
+	 * @param att_name
+	 *            输入<b>AgBusinessUser.name</b>字段的值
+	 */
+	public void setName(String att_name) {
+		this.name = att_name;
+	}
+
+	/**
+	 * 设置银行名称(reserved_bank_name)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.ReservedBankName</b>的值
+	 */
+	@Column(name = "reserved_bank_name")
+	public String getReservedBankName() {
+		return this.reservedBankName;
+	}
+
+	/**
+	 * 设置 reserved_bank_name字段方法
+	 * 
+	 * @param att_reservedBankName
+	 *            输入<b>AgBusinessUser.reservedBankName</b>字段的值
+	 */
+	public void setReservedBankName(String att_reservedBankName) {
+		this.reservedBankName = att_reservedBankName;
+	}
+
+	/**
+	 * 设置银行账户名称(reserved_account_name)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.ReservedAccountName</b>的值
+	 */
+	@Column(name = "reserved_account_name")
+	public String getReservedAccountName() {
+		return this.reservedAccountName;
+	}
+
+	/**
+	 * 设置 reserved_account_name字段方法
+	 * 
+	 * @param att_reservedAccountName
+	 *            输入<b>AgBusinessUser.reservedAccountName</b>字段的值
+	 */
+	public void setReservedAccountName(String att_reservedAccountName) {
+		this.reservedAccountName = att_reservedAccountName;
+	}
+
+	/**
+	 * 设置银行账号(reserved_account_number)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.ReservedAccountNumber</b>的值
+	 */
+	@Column(name = "reserved_account_number")
+	public String getReservedAccountNumber() {
+		return this.reservedAccountNumber;
+	}
+
+	/**
+	 * 设置 reserved_account_number字段方法
+	 * 
+	 * @param att_reservedAccountNumber
+	 *            输入<b>AgBusinessUser.reservedAccountNumber</b>字段的值
+	 */
+	public void setReservedAccountNumber(String att_reservedAccountNumber) {
+		this.reservedAccountNumber = att_reservedAccountNumber;
+	}
+
+	/**
+	 * 设置备注(remark)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.Remark</b>的值
+	 */
+	@Column(name = "remark")
+	public String getRemark() {
+		return this.remark;
+	}
+
+	/**
+	 * 设置 remark字段方法
+	 * 
+	 * @param att_remark
+	 *            输入<b>AgBusinessUser.remark</b>字段的值
+	 */
+	public void setRemark(String att_remark) {
+		this.remark = att_remark;
+	}
+
+	/**
+	 * 设置头像(avatar)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.Avatar</b>的值
+	 */
+	@Column(name = "avatar")
+	public String getAvatar() {
+		return this.avatar;
+	}
+
+	/**
+	 * 设置 avatar字段方法
+	 * 
+	 * @param att_avatar
+	 *            输入<b>AgBusinessUser.avatar</b>字段的值
+	 */
+	public void setAvatar(String att_avatar) {
+		this.avatar = att_avatar;
+	}
+
+	/**
+	 * 设置二维码(qr_code)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.QrCode</b>的值
+	 */
+	@Column(name = "qr_code")
+	public String getQrCode() {
+		return this.qrCode;
+	}
+
+	/**
+	 * 设置 qr_code字段方法
+	 * 
+	 * @param att_qrCode
+	 *            输入<b>AgBusinessUser.qrCode</b>字段的值
+	 */
+	public void setQrCode(String att_qrCode) {
+		this.qrCode = att_qrCode;
+	}
+
+	/**
+	 * 设置状态:1正常，2禁用(status)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.Status</b>的值
+	 */
+	@Column(name = "status")
+	public String getStatus() {
+		return this.status;
+	}
+
+	/**
+	 * 设置 status字段方法
+	 * 
+	 * @param att_status
+	 *            输入<b>AgBusinessUser.status</b>字段的值
+	 */
+	public void setStatus(String att_status) {
+		this.status = att_status;
+	}
+
+	/**
+	 * 设置创建人(create_ren)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.CreateRen</b>的值
+	 */
+	@Column(name = "create_ren")
+	public String getCreateRen() {
+		return this.createRen;
+	}
+
+	/**
+	 * 设置 create_ren字段方法
+	 * 
+	 * @param att_createRen
+	 *            输入<b>AgBusinessUser.createRen</b>字段的值
+	 */
+	public void setCreateRen(String att_createRen) {
+		this.createRen = att_createRen;
+	}
+
+	/**
+	 * 设置创建时间(create_date)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.CreateDate</b>的值
+	 */
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "create_date")
+	public Date getCreateDate() {
+		return this.createDate;
+	}
+
+	/**
+	 * 设置 create_date字段方法
+	 * 
+	 * @param att_createDate
+	 *            输入<b>AgBusinessUser.createDate</b>字段的值
+	 */
+	public void setCreateDate(Date att_createDate) {
+		this.createDate = att_createDate;
+	}
+
+	/**
+	 * 设置修改时间(edit_date)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.EditDate</b>的值
+	 */
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "edit_date")
+	public Date getEditDate() {
+		return this.editDate;
+	}
+
+	/**
+	 * 设置 edit_date字段方法
+	 * 
+	 * @param att_editDate
+	 *            输入<b>AgBusinessUser.editDate</b>字段的值
+	 */
+	public void setEditDate(Date att_editDate) {
+		this.editDate = att_editDate;
+	}
+
+	/**
+	 * 设置修改人(edit_ren)字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.EditRen</b>的值
+	 */
+	@Column(name = "edit_ren")
+	public String getEditRen() {
+		return this.editRen;
+	}
+
+	/**
+	 * 设置 edit_ren字段方法
+	 * 
+	 * @param att_editRen
+	 *            输入<b>AgBusinessUser.editRen</b>字段的值
+	 */
+	public void setEditRen(String att_editRen) {
+		this.editRen = att_editRen;
+	}
+
+	/**
+	 * 获取初代业务员
+	 * 
+	 * @return
+	 */
+	@Column(name = "top_Primary_Agent_Name")
+	public String getTopPrimaryAgentName() {
+		return topPrimaryAgentName;
+	}
+
+	/**
+	 * 设置初代业务员
+	 * 
+	 * @param topPrimaryAgentName
+	 */
+	public void setTopPrimaryAgentName(String topPrimaryAgentName) {
+		this.topPrimaryAgentName = topPrimaryAgentName;
+	}
+	
+	@Column(name = "top_Primary_Agent_id")
+	public Integer getTopPrimaryAgentId() {
+		return topPrimaryAgentId;
+	}
+
+	public void setTopPrimaryAgentId(Integer topPrimaryAgentId) {
+		this.topPrimaryAgentId = topPrimaryAgentId;
+	}
+
+
+
+	// /===============数据库表字段属性end==========
+	/**
+	 * 上级业务员名称
+	 */
+	private String parentAgentName;
+	/**
+	 * 代理商姓名
+	 */
+	private String topReservedAgentName;
+	/**
+	 * 所属组织
+	 */
+	private String topReservedAgentRelateToName;
+	private String reservedRelateToOrganizationName;
+	
+	private String reservedProvId;
+	private String reservedCityId;
+	
+	
+	
+	@Formula("(SELECT b.name FROM ag_agent_info a,ag_hospital_info b WHERE a.aai_id= aai_id and a.reserved_relate_to_organization_id=b.organization_id)")
+	public String getReservedRelateToOrganizationName() {
+		return reservedRelateToOrganizationName;
+	}
+
+	public void setReservedRelateToOrganizationName(
+			String reservedRelateToOrganizationName) {
+		this.reservedRelateToOrganizationName = reservedRelateToOrganizationName;
+	}
+
+	@Formula("(SELECT a.reserved_prov_id FROM ag_agent_info a WHERE a.aai_id= aai_id)")
+	public String getReservedProvId() {
+		return reservedProvId;
+	}
+
+	public void setReservedProvId(String reservedProvId) {
+		this.reservedProvId = reservedProvId;
+	}
+	@Formula("(SELECT a.reserved_city_id FROM ag_agent_info a WHERE a.aai_id= aai_id)")
+	public String getReservedCityId() {
+		return reservedCityId;
+	}
+
+	public void setReservedCityId(String reservedCityId) {
+		this.reservedCityId = reservedCityId;
+	}
+
+	/**
+	 * 获取 上级业务员名称
+	 * 
+	 * @return
+	 */
+	@Formula("(SELECT a.name FROM ag_business_user a WHERE a.agent_id= parent_agent_id)")
+	public String getParentAgentName() {
+		return parentAgentName;
+	}
+
+	/**
+	 * 设置 上级业务员名称
+	 * 
+	 * @param parentAgentName
+	 */
+	public void setParentAgentName(String parentAgentName) {
+		this.parentAgentName = parentAgentName;
+	}
+
+	/**
+	 * 获取 代理商姓名
+	 * 
+	 * @return
+	 */
+	@Formula("(SELECT a.name FROM ag_agent_info a WHERE a.aai_id= aai_id)")
+	public String getTopReservedAgentName() {
+		return topReservedAgentName;
+	}
+
+	/**
+	 * 设置 代理商姓名
+	 * 
+	 * @param topReservedAgentName
+	 */
+	public void setTopReservedAgentName(String topReservedAgentName) {
+		this.topReservedAgentName = topReservedAgentName;
+	}
+
+	/**
+	 * 获取所属组织
+	 * 
+	 * @return
+	 */
+	@Formula("(SELECT a.reserved_relate_to_team_name FROM ag_agent_info a WHERE a.aai_id= aai_id   )")
+	public String getTopReservedAgentRelateToName() {
+		return topReservedAgentRelateToName;
+	}
+
+	/**
+	 * 设置所属组织
+	 * 
+	 * @param topReservedAgentRelateToName
+	 */
+	public void setTopReservedAgentRelateToName(
+			String topReservedAgentRelateToName) {
+		this.topReservedAgentRelateToName = topReservedAgentRelateToName;
+	}
+
+	// /===============数据库表无关子段字段属性begin==========
+	/**
+	 * 业务员ID(agent_id):字段类型为String
+	 */
+	private String agentId_str;
+	/**
+	 * 代理商ID(aai_id):字段类型为String
+	 */
+	private String aaiId_str;
+	/**
+	 * 上级代理人ID(parent_agent_id):字段类型为String
+	 */
+	private String parentAgentId_str;
+	/**
+	 * 创建时间(create_date):字段类型为Date
+	 */
+	private Date createDate_start;
+	/**
+	 * 创建时间(create_date):字段类型为Date
+	 */
+	private Date createDate_end;
+	/**
+	 * 修改时间(edit_date):字段类型为Date
+	 */
+	private Date editDate_start;
+	/**
+	 * 修改时间(edit_date):字段类型为Date
+	 */
+	private Date editDate_end;
+	/**
+	 * ():字段类型为String ag_business_user表里不用like作为条件的字符串
+	 */
+	private String Tab_like;
+	/**
+	 * ():字段类型为String ag_business_user表里order by 字符串
+	 */
+	private String Tab_order;
+
+	/**
+	 * 设置agentId字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.agentId</b>的值
+	 */
+	@Transient
+	public String getAgentId_str() {
+		return this.agentId_str;
+	}
+
+	/**
+	 * 设置 agent_id字段方法
+	 * 
+	 * @param att_agentId
+	 *            输入<b>AgBusinessUser.agentId</b>字段的值
+	 */
+	public void setAgentId_str(String att_agentId_str) {
+		this.agentId_str = att_agentId_str;
+	}
+
+	/**
+	 * 设置aaiId字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.aaiId</b>的值
+	 */
+	@Transient
+	public String getAaiId_str() {
+		return this.aaiId_str;
+	}
+
+	/**
+	 * 设置 aai_id字段方法
+	 * 
+	 * @param att_aaiId
+	 *            输入<b>AgBusinessUser.aaiId</b>字段的值
+	 */
+	public void setAaiId_str(String att_aaiId_str) {
+		this.aaiId_str = att_aaiId_str;
+	}
+
+	/**
+	 * 设置parentAgentId字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.parentAgentId</b>的值
+	 */
+	@Transient
+	public String getParentAgentId_str() {
+		return this.parentAgentId_str;
+	}
+
+	/**
+	 * 设置 parent_agent_id字段方法
+	 * 
+	 * @param att_parentAgentId
+	 *            输入<b>AgBusinessUser.parentAgentId</b>字段的值
+	 */
+	public void setParentAgentId_str(String att_parentAgentId_str) {
+		this.parentAgentId_str = att_parentAgentId_str;
+	}
+
+	/**
+	 * 设置createDate字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.createDate</b>的值
+	 */
+	@Transient
+	public Date getCreateDate_start() {
+		return this.createDate_start;
+	}
+
+	/**
+	 * 设置 create_date字段方法
+	 * 
+	 * @param att_createDate
+	 *            输入<b>AgBusinessUser.createDate</b>字段的值
+	 */
+	public void setCreateDate_start(Date att_createDate_start) {
+		this.createDate_start = att_createDate_start;
+	}
+
+	/**
+	 * 设置createDate字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.createDate</b>的值
+	 */
+	@Transient
+	public Date getCreateDate_end() {
+		return this.createDate_end;
+	}
+
+	/**
+	 * 设置 create_date字段方法
+	 * 
+	 * @param att_createDate
+	 *            输入<b>AgBusinessUser.createDate</b>字段的值
+	 */
+	public void setCreateDate_end(Date att_createDate_end) {
+		this.createDate_end = att_createDate_end;
+	}
+
+	/**
+	 * 设置editDate字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.editDate</b>的值
+	 */
+	@Transient
+	public Date getEditDate_start() {
+		return this.editDate_start;
+	}
+
+	/**
+	 * 设置 edit_date字段方法
+	 * 
+	 * @param att_editDate
+	 *            输入<b>AgBusinessUser.editDate</b>字段的值
+	 */
+	public void setEditDate_start(Date att_editDate_start) {
+		this.editDate_start = att_editDate_start;
+	}
+
+	/**
+	 * 设置editDate字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.editDate</b>的值
+	 */
+	@Transient
+	public Date getEditDate_end() {
+		return this.editDate_end;
+	}
+
+	/**
+	 * 设置 edit_date字段方法
+	 * 
+	 * @param att_editDate
+	 *            输入<b>AgBusinessUser.editDate</b>字段的值
+	 */
+	public void setEditDate_end(Date att_editDate_end) {
+		this.editDate_end = att_editDate_end;
+	}
+
+	/**
+	 * 设置tab_like字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.tab_like</b>的值
+	 */
+	@Transient
+	public String getTab_like() {
+		return this.Tab_like;
+	}
+
+	/**
+	 * 设置 字段方法
+	 * 
+	 * @param att_tab_like
+	 *            输入<b>AgBusinessUser.tab_like</b>字段的值
+	 */
+	public void setTab_like(String att_Tab_like) {
+		this.Tab_like = att_Tab_like;
+	}
+
+	/**
+	 * 设置tab_order字段方法
+	 * 
+	 * @return 返回 <b>AgBusinessUser.tab_order</b>的值
+	 */
+	@Transient
+	public String getTab_order() {
+		return this.Tab_order;
+	}
+
+	/**
+	 * 设置 字段方法
+	 * 
+	 * @param att_tab_order
+	 *            输入<b>AgBusinessUser.tab_order</b>字段的值
+	 */
+	public void setTab_order(String att_Tab_order) {
+		this.Tab_order = att_Tab_order;
+	}
+
+	// /===============数据库表无关子段字段属性end==========
+	private Integer id;
+	private String aaiIdType;//上级业务员是否为空：1为空；2不为空
+	private String parentAgentIdType;//代理商是否为空：1为空；2不为空
+	private Boolean isDirectBelonging;//是否直接下属
+	private Integer belongingsCount;//员工数量
+	private Integer directBelongingsCount;//下线数量
+	private Double shareAmount;//历史收入
+	private Double remainingAmount;//账户余额
+	
+	@Formula("(SELECT a.total_share FROM ag_money_count a WHERE a.amc_type='3' and a.sui_id=agent_id)")
+	public Double getShareAmount() {
+		return shareAmount;
+	}
+
+	public void setShareAmount(Double shareAmount) {
+		this.shareAmount = shareAmount;
+	}
+	@Formula("(SELECT a.money_count FROM ag_money_count a WHERE a.amc_type='3' and a.sui_id=agent_id)")
+	public Double getRemainingAmount() {
+		return remainingAmount;
+	}
+
+	public void setRemainingAmount(Double remainingAmount) {
+		this.remainingAmount = remainingAmount;
+	}
+
+	@Transient
+	public Boolean getIsDirectBelonging() {
+		if(this.parentAgentId!=null)
+			isDirectBelonging=false;
+		else if(this.agentType!=null && this.agentType.equals("4"))
+			isDirectBelonging=false;
+		else
+			isDirectBelonging=true;
+		return isDirectBelonging;
+	}
+
+	public void setIsDirectBelonging(Boolean isDirectBelonging) {
+		this.isDirectBelonging = isDirectBelonging;
+	}
+	@Formula("(SELECT count(1) FROM ag_business_user a WHERE a.aai_id= aai_id and agent_type='4' and a.parent_agent_id is null and a.agent_type is null  )")
+	public Integer getBelongingsCount() {
+		return belongingsCount;
+	}
+
+	public void setBelongingsCount(Integer belongingsCount) {
+		this.belongingsCount = belongingsCount;
+	}
+	@Formula("(SELECT count(1) FROM ag_business_user a WHERE a.parent_agent_id=agent_id)")
+	public Integer getDirectBelongingsCount() {
+		return directBelongingsCount;
+	}
+
+	public void setDirectBelongingsCount(Integer directBelongingsCount) {
+		this.directBelongingsCount = directBelongingsCount;
+	}
+
+	@Transient
+	public String getAaiIdType() {
+		return aaiIdType;
+	}
+
+	public void setAaiIdType(String aaiIdType) {
+		this.aaiIdType = aaiIdType;
+	}
+	@Transient
+	public String getParentAgentIdType() {
+		return parentAgentIdType;
+	}
+
+	public void setParentAgentIdType(String parentAgentIdType) {
+		this.parentAgentIdType = parentAgentIdType;
+	}
+
+	@Transient
+	public Integer getId() {
+		return agentId;
+	}
+
+	public void setId(Integer id) {
+		this.agentId = id;
+	}
+}

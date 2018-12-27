@@ -1,0 +1,705 @@
+package com.hsk.angeldoctor.web.hospital.controller;
+
+ 
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.hsk.angeldoctor.api.daobbase.IAgHospitalInfoDao;
+import com.hsk.angeldoctor.api.persistence.AgCollectionDoctor;
+import com.hsk.angeldoctor.api.persistence.AgCollectionHospital;
+import com.hsk.angeldoctor.api.persistence.AgDepartmentInfo;
+import com.hsk.angeldoctor.api.persistence.AgDoctorInfo;
+import com.hsk.angeldoctor.api.persistence.AgWorkInfo;
+import com.hsk.angeldoctor.api.persistence.AgWorkModel;
+import com.hsk.angeldoctor.api.persistence.AgWorkModelGx;
+import com.hsk.angeldoctor.api.persistence.AgWorkTime;
+import com.hsk.angeldoctor.web.hospital.service.IAgCollectionDoctorService;
+import com.hsk.angeldoctor.web.hospital.service.IAgCollectionHospitalService;
+import com.hsk.angeldoctor.web.hospital.service.IAgDepartmentInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgDoctorDepartmentGxService;
+import com.hsk.angeldoctor.web.hospital.service.IAgDoctorInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgWorkInfoService;
+import com.hsk.angeldoctor.web.hospital.service.IAgWorkModelGxService;
+import com.hsk.angeldoctor.web.hospital.service.IAgWorkModelService;
+import com.hsk.angeldoctor.web.hospital.service.IAgWorkTimeService;
+import com.hsk.angeldoctor.web.hospital.service.imp.AgDepartmentInfoService;
+import com.hsk.angeldoctor.web.operate.service.imp.AgInformationInfoService;
+import com.hsk.supper.dto.comm.SysRetrunMessage;
+import com.hsk.xframe.api.controller.imp.DSTController;
+import com.hsk.xframe.api.daobbase.imp.SysUserInfoDao;
+import com.hsk.xframe.api.persistence.SysUserInfo;
+import com.hsk.xframe.web.sysUser.service.ISysUserService;
+
+/**
+ * 医院管理02接口类
+ * @author xun
+ * @version v1.0
+ *
+ */
+@Controller
+public class HospitalTwoController extends DSTController{
+	
+	 /**
+	  * 科室管理业务类 
+	  */
+	@Autowired
+	private IAgDepartmentInfoService agDepartmentInfoService;
+	/**
+	 * 医生管理业务类
+	 */
+	@Autowired
+	private	IAgDoctorInfoService  agDoctorInfoService;
+	
+	/**
+	 * 医生科室关系表业务操作 
+	 */
+	@Autowired
+	private	IAgDoctorDepartmentGxService agDoctorDepartmentGxService;
+	
+	
+	/**
+	 * 医院收藏信息 业务操作 
+	 */
+	@Autowired
+	private IAgCollectionHospitalService agCollectionHospitalService;
+	
+	/**
+	 * 医院收藏信息表业务操作 
+	 */
+	@Autowired
+	 private IAgCollectionDoctorService agCollectionDoctorService;
+	
+	/**
+	 *  排班时段业务操作
+	 */
+	@Autowired
+	private IAgWorkTimeService agWorkTimeService;
+	/**
+	 * 排班信息业务操作
+	 */
+	@Autowired
+	private	IAgWorkInfoService agWorkInfoService;
+	
+	/**
+	 * 排班模板信息
+	 */
+	@Autowired
+	private	IAgWorkModelService agWorkModelService;
+	
+	/**
+	 * 排班模板关系业务操作
+	 */
+	@Autowired
+	private IAgWorkModelGxService agWorkModelGxService;
+	
+	@Autowired
+	private ISysUserService sysUserService;
+	/**
+	 * 查询科室列表:当医院端使用该接口时不需要输入医院ID，系统会从token中取出医院信息
+	 * @param request
+	 * @param response
+	 * @param att_AgDepartmentInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/departList.htm")
+	public void DepartList(HttpServletRequest request,
+			HttpServletResponse response,
+			@ModelAttribute AgDepartmentInfo att_AgDepartmentInfo) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agDepartmentInfoService.setRequest(request);
+		att_AgDepartmentInfo.setTab_like("name");
+		srm.setObj(agDepartmentInfoService.getPagerModelObject(att_AgDepartmentInfo));
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 根据科室ID查询科室详细信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/departInfo.htm")
+	public void departInfo(HttpServletRequest request,
+			HttpServletResponse response, Integer id) throws Exception {
+		agDepartmentInfoService.setRequest(request); 
+		SysRetrunMessage srm=agDepartmentInfoService.findFormObject(id);	
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 新增或修改科室信息接口：当科室ID为空时新增，不为空时修改医院ID可不填写，保存时会从token中获取
+	 * @param request
+	 * @param response
+	 * @param att_AgAgentInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveDepart.htm")
+	public void saveAgent(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute AgDepartmentInfo att_AgDepartmentInfo ) throws Exception{
+		agDepartmentInfoService.setRequest(request);
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request);
+		if (att_AgDepartmentInfo.getDepartmentId() != null) {
+			att_AgDepartmentInfo.setEditDate(new Date());			
+			att_AgDepartmentInfo.setEditRen(userinfo.getUserName());
+		}else {
+			att_AgDepartmentInfo.setCreateDate(new Date());			
+			att_AgDepartmentInfo.setCreateRen(userinfo.getUserName());
+		}
+		SysRetrunMessage srm=agDepartmentInfoService.saveOrUpdateObject(att_AgDepartmentInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 根据科室ID删除科室信息
+	 * @param request
+	 * @param response
+	 * @param id 科室ID
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delDepart.htm")
+	public void delDepart(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agDepartmentInfoService.setRequest(request);
+		AgDoctorInfo agDoctorInfo = new AgDoctorInfo();
+		agDoctorInfo.setDepartmentId(id+"");
+		List<AgDoctorInfo> list = agDoctorInfoService.getAgDoctorInfoList(agDoctorInfo);
+		if (list.size()>0) {
+			SysRetrunMessage srm= new SysRetrunMessage(0l);
+			srm.setMeg("此科室下有医生");
+			 returnData(response,srm);
+		}else {
+			SysRetrunMessage srm=agDepartmentInfoService.deleteObject(id);
+			returnData(response,srm);
+		}
+	}
+
+	
+	/**
+	 * 预约到科室还是医生
+	 * @param request
+	 * @param response
+	 * @param att_AgDepartmentInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/orderDepOrDoc.htm")
+	public void orderDepOrDoc(HttpServletRequest request,
+			HttpServletResponse response, @ModelAttribute AgDepartmentInfo att_AgDepartmentInfo) throws Exception {
+		agDepartmentInfoService.setRequest(request); 
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request);
+		if (att_AgDepartmentInfo.getId() == null) {			
+			SysRetrunMessage srm= new SysRetrunMessage(0l);
+			srm.setMeg("未输入科室id ！");
+			 returnData(response,srm);
+		}else {
+			AgDepartmentInfo agDepartmentInfo=agDepartmentInfoService.findObject(att_AgDepartmentInfo.getDepartmentId());
+			agDepartmentInfo.setRegToDepartment(att_AgDepartmentInfo.getRegToDepartment());
+			agDepartmentInfo.setEditDate(new Date());			
+			agDepartmentInfo.setEditRen(userinfo.getUserName());
+			SysRetrunMessage srm=agDepartmentInfoService.saveOrUpdateObject(agDepartmentInfo);
+			returnData(response,srm);
+		}		
+	}
+	
+	
+	/**
+	 * 根据科室ID等查询条件查询医生列表
+	 * @param request
+	 * @param response
+	 * @param att_AgDoctorInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/doctorList.htm")
+	public void DoctorList(HttpServletRequest request,
+			HttpServletResponse response,
+			@ModelAttribute  AgDoctorInfo att_AgDoctorInfo,String isColl) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agDoctorInfoService.setRequest(request);
+		if(att_AgDoctorInfo.getDepartmentId()!=null)
+			att_AgDoctorInfo.setDepartmentId(","+att_AgDoctorInfo.getDepartmentId()+",");
+		att_AgDoctorInfo.setTab_like("name,departmentId");	
+		if(this.getUserType(request).equals("5"))
+			att_AgDoctorInfo.setVisible("1");
+		srm.setObj(agDoctorInfoService.getPagerModelObject(att_AgDoctorInfo,isColl));
+		returnData(response, srm);
+	}
+	/**
+	 * app查询医生列表
+	 * @param request
+	 * @param response
+	 * @param departmentId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/appDoctorList.htm")
+	public void appDoctorList(HttpServletRequest request,HttpServletResponse response,Integer departmentId,String isColl) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agDoctorInfoService.setRequest(request);
+		srm.setObj(agDoctorInfoService.getAppAgDoctorInfoListByDepId(departmentId, isColl));
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 根据医生ID条件查询医生详细信息
+	 * @param request
+	 * @param response
+	 * @param id  医生id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/doctorInfo.htm")
+	public void doctorInfo(HttpServletRequest request,
+			HttpServletResponse response, Integer id) throws Exception {
+		agDoctorInfoService.setRequest(request); 
+		SysRetrunMessage srm=agDoctorInfoService.findFormObject(id);
+		returnData(response,srm);
+	}
+	/**
+	 * 新增或修改医生信息接口：当医生ID为空时新增，不为空时修改
+	 * @param request
+	 * @param response
+	 * @param att_AgDoctorInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveDoctor.htm")
+	public void saveDoctor(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute  AgDoctorInfo att_AgDoctorInfo,Integer role) throws Exception{
+	
+		agDoctorInfoService.setRequest(request); 
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request);
+		 
+		if (att_AgDoctorInfo.getDoctorId() != null) {			
+			att_AgDoctorInfo.setEditDate(new Date());			
+			att_AgDoctorInfo.setEditRen(userinfo.getUserName());
+		}else {
+			att_AgDoctorInfo.setCreateDate(new Date());			
+			att_AgDoctorInfo.setCreateRen(userinfo.getUserName());
+		}
+		att_AgDoctorInfo.setRoleId(role);
+		SysRetrunMessage srm=agDoctorInfoService.saveOrUpdateObject(att_AgDoctorInfo);
+		returnData(response,srm);
+	}
+	/**
+	 * 	App保存医生信息
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveMyDoctor.htm")
+	public void saveMyDoctor(HttpServletRequest request ,HttpServletResponse response,@ModelAttribute  AgDoctorInfo att_AgDoctorInfo) throws Exception{
+	
+		agDoctorInfoService.setRequest(request); 
+		
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request);
+		Integer id= userinfo.getSroleId();
+		 
+		if (att_AgDoctorInfo.getId() != null) {			
+			att_AgDoctorInfo.setEditDate(new Date());			
+			att_AgDoctorInfo.setEditRen(userinfo.getUserName());
+		} 
+		SysRetrunMessage srm=agDoctorInfoService.saveMyDoctor(att_AgDoctorInfo);
+		returnData(response,srm);
+	}
+	
+	/**
+	 *  删除医生信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delDoctor.htm")
+	public void delDoctor(HttpServletRequest request ,HttpServletResponse response,Integer ID) throws Exception{
+		agDoctorInfoService.setRequest(request); 
+		SysRetrunMessage srm=agDoctorInfoService.deleteObject(ID);
+		returnData(response,srm);
+	}
+	/**
+	 * 修改医生密码
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @param password
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/updateDocPass.htm")
+	public void updateDocPass(HttpServletRequest request ,HttpServletResponse response,Integer id,String password) throws Exception{
+		sysUserService.setRequest(request); 
+		SysRetrunMessage srm=sysUserService.updatePass(id, 3, password);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 医生收藏操作
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */ 
+	@RequestMapping(value = "/hospital/saveCollDoc.htm")
+	public void saveCollDoc(HttpServletRequest request ,HttpServletResponse response ,Integer id  ) throws Exception{
+		
+		agCollectionDoctorService.setRequest(request); 
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request); 
+		AgCollectionDoctor att_AgCollectionDoctor=new AgCollectionDoctor();
+		att_AgCollectionDoctor.setDoctorId(id);
+		att_AgCollectionDoctor.setSuiId(userinfo.getSuiId());
+		SysRetrunMessage srm=agCollectionDoctorService.saveOrUpdateObject(att_AgCollectionDoctor);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 收藏医生列表查询
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/collDocPager.htm")
+	public void collDocPager(HttpServletRequest request,
+			HttpServletResponse response
+			 ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agCollectionDoctorService.setRequest(request);
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request); 
+		AgCollectionDoctor att_AgCollectionDoctor=new AgCollectionDoctor();
+		att_AgCollectionDoctor.setSuiId(userinfo.getSuiId());
+		srm.setObj(agCollectionDoctorService.getPagerModelObject(att_AgCollectionDoctor));
+		returnData(response, srm);
+	}
+	
+	
+	/**
+	 * 取消收藏医生
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delCollDoc.htm")
+	public void delCollDoc(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agCollectionDoctorService.setRequest(request); 
+		SysRetrunMessage srm=agCollectionDoctorService.deleteObject(id);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 医院收藏操作
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveCollHos.htm")
+	public void saveCollHos(HttpServletRequest request ,HttpServletResponse response ,Integer id  ) throws Exception{
+		agCollectionHospitalService.setRequest(request); 
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request); 
+		AgCollectionHospital att_AgCollectionHospital=new AgCollectionHospital();
+		att_AgCollectionHospital.setSuiId(userinfo.getSuiId());
+		att_AgCollectionHospital.setOrganizationId(id);
+		SysRetrunMessage srm=agCollectionHospitalService.saveOrUpdateObject(att_AgCollectionHospital);
+		returnData(response,srm);
+	}
+	
+	
+	/**
+	 * 收藏医院列表查询
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	
+	@RequestMapping(value = "/hospital/collHosPager.htm")
+	public void collHosPager(HttpServletRequest request,
+			HttpServletResponse response
+			 ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agCollectionHospitalService.setRequest(request);
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request); 
+		AgCollectionHospital att_AgCollectionHospital=new AgCollectionHospital();
+		att_AgCollectionHospital.setSuiId(userinfo.getSuiId());
+		srm.setObj(agCollectionHospitalService.getPagerModelObject(att_AgCollectionHospital));
+		returnData(response, srm);
+	}
+	
+	
+	/**
+	 * 取消收藏医院 
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delCollHos.htm")
+	public void delCollHos(HttpServletRequest request ,HttpServletResponse response,Integer id) throws Exception{
+		agCollectionHospitalService.setRequest(request); 
+		SysRetrunMessage srm=agCollectionHospitalService.deleteObject(id);
+		returnData(response,srm);
+	}
+	
+	/**
+	 * 查询科室列表:当医院端使用该接口时不需要输入医院ID，系统会从token中取出医院信息
+	 * @param request
+	 * @param response
+	 * @param organizationId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/workTimeList.htm")
+	public void workTimeList(HttpServletRequest request,
+			HttpServletResponse response,Integer organizationId
+			 ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkTimeService.setRequest(request);
+		AgWorkTime att_AgWorkTime=new AgWorkTime ();
+		att_AgWorkTime.setOrganizationId(organizationId);
+		srm.setObj(agWorkTimeService.getPagerModelObject(att_AgWorkTime));
+		returnData(response, srm);
+	}
+	
+	/**
+	 *新增或修改排班时段信息接口：当排班时段ID为空时新增，不为空时修改
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @param start
+	 * @param end
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveWorkTime.htm")
+	public void saveWorkTime(HttpServletRequest request,
+			HttpServletResponse response,Integer id,String start,String end 
+			 ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkTimeService.setRequest(request);
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request);
+		AgWorkTime att_AgWorkTime=new AgWorkTime ();
+		att_AgWorkTime.setShiftPeriodId(id);
+		att_AgWorkTime.setStatus("1"); 
+		
+		String startH=""; 
+		String startM="";
+		if(start!=null&&start.length()>=5){
+			startH=start.substring(0,2);
+			startM=start.substring(3,5);
+		}else {
+			srm.setCode(0l);
+			srm.setMeg("入参start异常！");
+			returnData(response, srm);
+			return  ;
+		}
+		att_AgWorkTime.setStartH(startH);
+		att_AgWorkTime.setStartM(startM);
+		
+		
+		String endH=""; 
+		String endM="";
+		if(end!=null&&end.length()>=5){
+			endH=end.substring(0,2);
+			endM=end.substring(3,5);
+		}else {
+			srm.setCode(0l);
+			srm.setMeg("入参end异常！");
+			returnData(response, srm);
+			return  ;
+		}
+		
+		att_AgWorkTime.setStartH(startH);
+		att_AgWorkTime.setStartM(startM);
+		att_AgWorkTime.setEndH(endH);
+		att_AgWorkTime.setEndM(endM); 
+		
+		if (att_AgWorkTime.getId() != null) {			
+			att_AgWorkTime.setEditDate(new Date());			
+			att_AgWorkTime.setEditRen(userinfo.getUserName());
+		}else {
+			att_AgWorkTime.setCreateDate(new Date());			
+			att_AgWorkTime.setCreateRen(userinfo.getUserName());
+		}
+		srm = agWorkTimeService.saveOrUpdateObject( att_AgWorkTime);
+		returnData(response, srm);
+	}
+	
+	
+	/**
+	 * 根据排班时段ID删除排班时段信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delWorkTime.htm")
+	public void delWorkTime(HttpServletRequest request ,HttpServletResponse response ,
+			Integer id ) throws Exception{
+		agWorkTimeService.setRequest(request);
+		SysRetrunMessage srm=agWorkTimeService.deleteObject(id);
+		returnData(response,srm);
+	}
+	/**
+	 * 查询科室列表:当医院端使用该接口时不需要输入医院ID，系统会从token中取出医院信息.
+	 * @param request
+	 * @param response
+	 * @param att_AgWorkInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/workInfoList.htm")
+	public void workInfoList(HttpServletRequest request,
+			HttpServletResponse response,
+			@ModelAttribute  AgWorkInfo att_AgWorkInfo) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkInfoService.setRequest(request);
+		srm.setObj(agWorkInfoService.getPagerModelObject(att_AgWorkInfo));
+		returnData(response, srm);
+	}
+	/**
+	 * 批量新增排班信息
+	 * @param request
+	 * @param response
+	 * @param att_AgWorkInfo
+	 * @throws Exception
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/hospital/newWorkInfos.htm")
+	public void newWorkInfosArray(HttpServletRequest request,
+			HttpServletResponse response,@RequestBody List<AgWorkInfo> att_AgWorkInfo
+			 ) throws Exception {
+		 
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkInfoService.setRequest(request);
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request); 
+		
+		if(att_AgWorkInfo!=null&&att_AgWorkInfo.size()>0){
+			for(AgWorkInfo   did:att_AgWorkInfo ){
+				 did.setOrganizationId(userinfo.getSroleId());
+				 if (did.getId() != null) {			
+					 did.setEditDate(new Date());			
+					 did.setEditRen(userinfo.getUserName());
+					}else {
+						did.setCreateDate(new Date());			
+						did.setCreateRen(userinfo.getUserName());
+						did.setStatus("0");
+					} 
+				 agWorkInfoService.saveOrUpdateObject(did);
+			} 
+		}
+		returnData(response, srm);
+	}
+	/**
+	 * 批量修改排班信息中的接诊人数
+	 * @param request
+	 * @param response
+	 * @param att_AgWorkInfo
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/editWorkInfos.htm")
+	public void editWorkInfosArray(HttpServletRequest request,
+			HttpServletResponse response,@RequestBody List<AgWorkInfo> att_AgWorkInfo
+			 ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkInfoService.setRequest(request);
+ 		srm.setObj(agWorkInfoService.saveOrUpdateListWork(att_AgWorkInfo));
+		returnData(response, srm);
+	}
+	/**
+	 * 根据排班ID组合删除排班信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delWorkInfo.htm")
+	public void delWorkInfo(HttpServletRequest request,
+			HttpServletResponse response,String  id
+			 ) throws Exception {
+		 
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkInfoService.setRequest(request);
+		srm.setObj(agWorkInfoService.deleteAllObject(id));
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 根据医院ID等查询条件查询排班模板列表
+	 * @param request
+	 * @param response
+	 * @param att_AgWorkModel
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/workModelList.htm")
+	public void workModelList(HttpServletRequest request,
+			HttpServletResponse response,
+			@ModelAttribute  AgWorkModel att_AgWorkModel) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkModelService.setRequest(request); 
+		srm.setObj(agWorkModelService.getPagerModelObject(att_AgWorkModel));
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 新增或修改排班模板信息接口：当排班模板ID为空时新增，不为空时修改
+	 * @param request
+	 * @param response
+	 * @param att_AgWorkModel
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/saveWorkModel.htm")
+	public void saveWorkModel(HttpServletRequest request,
+			HttpServletResponse response,@RequestBody SaveWorkModel att_AgWorkModel
+			 ) throws Exception {
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkModelService.setRequest(request);
+		AgWorkModel  did_AgWorkModel=new AgWorkModel ();
+		did_AgWorkModel.setName(att_AgWorkModel.getName());
+		SysUserInfo userinfo=this.getLoginSysUserInfo(request); 
+		 if (did_AgWorkModel.getId() != null) {			
+			 did_AgWorkModel.setEditDate(new Date());			
+			 did_AgWorkModel.setEditRen(userinfo.getUserName());
+			}else {
+				did_AgWorkModel.setCreateDate(new Date());			
+				did_AgWorkModel.setCreateRen(userinfo.getUserName());
+				did_AgWorkModel.setStatus("0");
+			}  
+		 srm=agWorkModelService.saveOrUpdateAgWorkModel(did_AgWorkModel , att_AgWorkModel.getPlans());
+		returnData(response, srm);
+	}
+	/**
+	 * 根据排班模板ID删除排班模板信息
+	 * @param request
+	 * @param response
+	 * @param id
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/delWorkModel.htm")
+	public void delWorkModel(HttpServletRequest request,
+			HttpServletResponse response,Integer  id
+			 ) throws Exception {
+		 
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkModelService.setRequest(request);
+		srm.setObj(agWorkModelService.deleteObject(id));
+		returnData(response, srm);
+	}
+	
+	/**
+	 * 根据排班模板ID删除排班模板信息
+	 * @param request
+	 * @param response
+	 * @param shiftTemplateId
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/hospital/getWorkListByModel.htm")
+	public void getWorkListByModel(HttpServletRequest request,
+			HttpServletResponse response,Integer  shiftTemplateId
+			 ) throws Exception { 
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		agWorkModelGxService.setRequest(request);
+		AgWorkModelGx att_AgWorkModelGx=new AgWorkModelGx ();
+		att_AgWorkModelGx.setShiftTemplateId(shiftTemplateId);
+		 srm.setObj(agWorkModelGxService.getListObject (att_AgWorkModelGx));
+		returnData(response, srm);
+	}
+	
+}

@@ -1,0 +1,224 @@
+package com.hsk.angeldoctor.web.operate.service.imp;
+
+import java.util.*;
+import org.springframework.stereotype.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.hsk.supper.dto.comm.PagerModel;
+import com.hsk.supper.dto.comm.SysRetrunMessage; 
+import com.hsk.xframe.api.service.imp.DSTService;
+import com.hsk.exception.HSKDBException;
+import com.hsk.exception.HSKException;
+import com.hsk.angeldoctor.web.operate.service.*;
+import com.hsk.angeldoctor.api.persistence.*;
+import com.hsk.angeldoctor.api.daobbase.*;
+
+
+/** 
+  operate业务操作实现类 
+ * @author  作者:admin
+ * @version  版本信息:v1.0   创建时间: 2018-08-14 13:40:21
+ */
+ 
+@Service
+public class  AgEvaluateInfoService extends DSTService implements IAgEvaluateInfoService {	
+   /**
+   *业务处理dao类  agEvaluateInfoDao 
+   */
+	@Autowired
+	protected IAgEvaluateInfoDao agEvaluateInfoDao;
+	@Autowired
+	protected IAgDoctorInfoDao agDoctorInfoDao;
+	@Autowired
+	protected IAgHospitalInfoDao agHospitalInfoDao;
+	@Autowired
+	protected IAgPatientInfoDao agPatientInfoDao;
+	@Autowired
+	private IAgMoneyCountDao agMoneyCountDao;
+
+ /**
+	 * 根据ag_evaluate_info表主键删除AgEvaluateInfo对象记录
+     * @param  aeiId  Integer类型(ag_evaluate_info表主键)
+	 * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+
+	public SysRetrunMessage findFormObject(Integer aeiId) throws HSKException{
+	        SysRetrunMessage srm=new SysRetrunMessage(1l);
+			  	
+			try{
+		   			AgEvaluateInfo     att_AgEvaluateInfo= agEvaluateInfoDao.findAgEvaluateInfoById( aeiId) ;
+					srm.setObj(att_AgEvaluateInfo);
+				} catch (HSKDBException e) {
+					e.printStackTrace(); 
+					srm.setCode(0l);
+					srm.setMeg(e.getMessage()); 
+				}
+				 return srm ;
+	} 
+
+    /**
+	 * 根据ag_evaluate_info表主键删除AgEvaluateInfo对象记录
+     * @param  aeiId  Integer类型(ag_evaluate_info表主键)
+	 * @throws HSKException
+	 */
+
+	public AgEvaluateInfo findObject(Integer aeiId) throws HSKException{
+			AgEvaluateInfo  att_AgEvaluateInfo=new AgEvaluateInfo();		
+			try{
+		        att_AgEvaluateInfo= agEvaluateInfoDao.findAgEvaluateInfoById( aeiId) ;
+				} catch (HSKDBException e) {
+					e.printStackTrace(); 
+					throw new  HSKException(e);
+				}
+				return  att_AgEvaluateInfo;
+	}
+	
+	 
+	 /**
+	 * 根据ag_evaluate_info表主键删除AgEvaluateInfo对象记录
+     * @param  aeiId  Integer类型(ag_evaluate_info表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteObject(Integer aeiId) throws HSKException{  
+		    SysRetrunMessage srm=new SysRetrunMessage(1l);
+		   try{ 
+				agEvaluateInfoDao.deleteAgEvaluateInfoById(aeiId);
+			 } catch (Exception e) {
+					e.printStackTrace(); 
+					throw new  HSKException(e);
+		     }
+		   return srm;  
+	}
+	
+	/**
+	 * 根据ag_evaluate_info表主键删除多条AgEvaluateInfo对象记录
+     * @param  AeiIds  Integer类型(ag_evaluate_info表主键)
+     * @return SysRetrunMessage 对象记录
+	 * @throws HSKException
+	 */
+	public SysRetrunMessage deleteAllObject(String aeiIds) throws HSKException{
+		SysRetrunMessage srm = new SysRetrunMessage(1l);
+		try {
+			String[] ids = aeiIds.split(",");
+			for (String did : ids) {
+				if (did != null && !"".equals(did.trim())) {
+					agEvaluateInfoDao.deleteAgEvaluateInfoById(Integer
+							.valueOf(did));
+				}
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			HSKException hse = new HSKException(e);
+			hse.setDisposeType("01");
+			throw hse;
+		} catch (HSKDBException e) {
+			e.printStackTrace();
+			throw new HSKException(e);
+		}
+		return srm;	  
+	 }
+	 
+ 
+	 /**
+	 * 新增或修改ag_evaluate_info表记录 ,如果ag_evaluate_info表主键AgEvaluateInfo.AeiId为空就是添加，如果非空就是修改
+     * @param  att_AgEvaluateInfo  AgEvaluateInfo类型(ag_evaluate_info表记录)
+     * @return AgEvaluateInfo  修改后的AgEvaluateInfo对象记录
+	 * @throws HSKDBException
+	 */
+	public SysRetrunMessage saveOrUpdateObject( AgEvaluateInfo att_AgEvaluateInfo) throws HSKException{
+			 SysRetrunMessage srm = new SysRetrunMessage(1l);
+			  try{
+				  	if(att_AgEvaluateInfo.getAeiId()==null){
+				  		//检验是否已经评价过了 
+				  		AgEvaluateInfo check_AgEvaluateInfo=new AgEvaluateInfo();
+				  		check_AgEvaluateInfo.setMedicalRecordId(att_AgEvaluateInfo.getMedicalRecordId());
+				  		List<AgEvaluateInfo> checkList = agEvaluateInfoDao.getListByAgEvaluateInfo(check_AgEvaluateInfo);
+				  		if(checkList!=null && checkList.size() >0){
+				  			srm.setCode(0l);
+				  			srm.setMeg("该信息已经评价，不允许多次评价!");
+				  			return srm;
+				  		}
+				  		
+				  		AgMoneyCount att_AgMoneyCount =new AgMoneyCount();
+				  		att_AgMoneyCount.setSuiId(att_AgEvaluateInfo.getPatientId());
+						att_AgMoneyCount.setAmcType("4");
+						att_AgMoneyCount.setEvaluationsCount(1);
+						agMoneyCountDao.updateAgMoneyCount(att_AgMoneyCount);
+				  	}
+					agEvaluateInfoDao.saveOrUpdateAgEvaluateInfo(att_AgEvaluateInfo); 
+					srm.setObj(att_AgEvaluateInfo);
+			    } catch (Exception e) {
+					e.printStackTrace(); 
+					throw new HSKException(e);
+		        }
+			return srm;	  
+	}
+	
+	 
+	/**
+	 *根据AgEvaluateInfo对象作为对(ag_evaluate_info表进行查询，获取分页对象
+     * @param  att_AgEvaluateInfo  AgEvaluateInfo类型(ag_evaluate_info表记录)
+     * @return PagerModel  分页对象
+	 * @throws HSKException 
+	 */
+	public PagerModel getPagerModelObject (AgEvaluateInfo att_AgEvaluateInfo) throws HSKException{
+		PagerModel pm=new PagerModel(new ArrayList<AgEvaluateInfo>());
+			  try{
+				  	if(att_AgEvaluateInfo.getPatientName()!=null && !att_AgEvaluateInfo.getPatientName().trim().equals("")){
+				  		AgPatientInfo att_AgPatientInfo = new AgPatientInfo();
+				  		att_AgPatientInfo.setName(att_AgEvaluateInfo.getPatientName());
+				  		att_AgPatientInfo.setTab_like("name");
+				  		List<AgPatientInfo> list=agPatientInfoDao.getListByAgPatientInfo(att_AgPatientInfo);
+				  		if(list !=null && list.size()>0){
+				  			String patientId_str="";
+				  			for(AgPatientInfo info:list)
+				  				patientId_str+=info.getPatientId()+",";
+				  			patientId_str=patientId_str.substring(0, patientId_str.length()-1);
+				  			att_AgEvaluateInfo.setPatientId_str(patientId_str);
+				  		}else
+				  			return pm;
+				  	}
+				  	if(att_AgEvaluateInfo.getDoctorName()!=null && !att_AgEvaluateInfo.getDoctorName().trim().equals("")){
+				  		AgDoctorInfo att_AgDoctorInfo = new AgDoctorInfo();
+				  		att_AgDoctorInfo.setName(att_AgEvaluateInfo.getDoctorName());
+				  		att_AgDoctorInfo.setTab_like("name");
+				  		List<AgDoctorInfo> list=agDoctorInfoDao.getListByAgDoctorInfo(att_AgDoctorInfo);
+				  		if(list !=null && list.size()>0){
+				  			String doctorId_str="";
+				  			for(AgDoctorInfo info:list)
+				  				doctorId_str+=info.getDoctorId()+",";
+				  			doctorId_str=doctorId_str.substring(0, doctorId_str.length()-1);
+				  			att_AgEvaluateInfo.setDoctorId_str(doctorId_str);
+				  		}else
+				  			return pm;
+				  	}
+				  	if(att_AgEvaluateInfo.getOrganizationName()!=null && !att_AgEvaluateInfo.getOrganizationName().trim().equals("")){
+				  		AgHospitalInfo att_AgHospitalInfo = new AgHospitalInfo();
+				  		att_AgHospitalInfo.setName(att_AgEvaluateInfo.getOrganizationName());
+				  		att_AgHospitalInfo.setTab_like("name");
+				  		List<AgHospitalInfo> list=agHospitalInfoDao.getListByAgHospitalInfo(att_AgHospitalInfo);
+				  		if(list !=null && list.size()>0){
+				  			String organizationId_str="";
+				  			for(AgHospitalInfo info:list)
+				  				organizationId_str+=info.getOrganizationId()+",";
+				  			organizationId_str=organizationId_str.substring(0, organizationId_str.length()-1);
+				  			att_AgEvaluateInfo.setOrganizationId_str(organizationId_str);
+				  		}else
+				  			return pm;
+				  	}
+				  	if(this.GetOneSessionAccount().getUserType()==2){//如果是医院管理员登录
+				  		att_AgEvaluateInfo.setOrganizationId(this.GetOneSessionAccount().getSroleId());
+					}else if(this.GetOneSessionAccount().getUserType()==3){//如果是医生登录
+						AgDoctorInfo att_AgDoctorInfo= agDoctorInfoDao.findAgDoctorInfoById(this.GetOneSessionAccount().getSroleId());
+						att_AgEvaluateInfo.setOrganizationId(att_AgDoctorInfo.getOrganizationId());
+					}
+				  	att_AgEvaluateInfo.setTab_order("aeiId desc");
+					pm=agEvaluateInfoDao.getPagerModelByAgEvaluateInfo(att_AgEvaluateInfo);
+			    } catch (Exception e) {
+					e.printStackTrace(); 
+		        }
+		return pm;
+	} 
+	 
+}

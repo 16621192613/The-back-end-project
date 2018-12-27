@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<mapping systemKey="ClassUtil_famtstr"
+		systemValue="com.hsk.xframe.api.persistence">
+	</mapping>
+	<mapping systemKey="ClassUtil_famtstr"
+		systemValue="com.hsk.xframe.api.model">
+	</mapping>
+ 
+	<mapping systemKey="ClassUtil_famtstr"
+		systemValue="com.hsk.xframe.api.dto">
+	</mapping>
+	
+        <mapping systemKey="ClassUtil_famtstr"
+		systemValue="com.hsk.angeldoctor.api.persistence">
+	</mapping>
+	<mapping systemKey="ClassUtil_famtstr"
+		systemValue="com.hsk.angeldoctor.api.model">
+	</mapping>
+ 
+	<mapping systemKey="ClassUtil_famtstr"
+		systemValue="com.hsk.angeldoctor.api.dto">
+	</mapping>
+	
+	
+	
+	<mapping systemKey="default_chip" systemValue="false"></mapping>
+	<mapping systemKey="DB_Type" systemValue="mysql"></mapping>
+	
+</root>

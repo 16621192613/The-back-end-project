@@ -1,0 +1,402 @@
+package com.hsk.angeldoctor.api.daobbase.imp;
+
+import java.util.*;
+import com.hsk.supper.dto.comm.PagerModel;
+import org.springframework.stereotype.*;
+import com.hsk.exception.HSKDBException;
+import com.hsk.supper.dao.imp.SupperDao;
+import com.hsk.angeldoctor.api.daobbase.*;
+import com.hsk.angeldoctor.api.persistence.*;
+
+/** 
+ * ag_doctor_info表数据库层面操作实现类 
+ * @author  作者:admin
+ * @version  版本信息:v1.0   创建时间: 2018-08-14 13:27:59
+ */
+@Component
+public class  AgDoctorInfoDao extends SupperDao implements IAgDoctorInfoDao {	
+
+	/**
+	 * 根据ag_doctor_info表主键查找AgDoctorInfo对象记录
+	 * 
+	 * @param  DoctorId  Integer类型(ag_doctor_info表主键)
+	 * @return AgDoctorInfo ag_doctor_info表记录
+	 * @throws HSKDBException
+	 */	
+	public AgDoctorInfo findAgDoctorInfoById(Integer DoctorId) throws HSKDBException{
+				AgDoctorInfo  att_AgDoctorInfo=new AgDoctorInfo();				
+				if(DoctorId!=null){
+					att_AgDoctorInfo.setDoctorId(DoctorId);	
+				    Object obj=	this.getOne(att_AgDoctorInfo);
+					if(obj!=null){
+						att_AgDoctorInfo=(AgDoctorInfo) obj;
+					}
+				}
+				return  att_AgDoctorInfo;
+	}
+	 /**
+	  * 根据ag_doctor_info表主键删除AgDoctorInfo对象记录
+	  * @param  DoctorId  Integer类型(ag_doctor_info表主键)
+	  * @throws HSKDBException
+	  */
+	public void deleteAgDoctorInfoById(Integer ID) throws HSKDBException{ 
+		 AgDoctorInfo  att_AgDoctorInfo=new AgDoctorInfo();	
+		  if(ID!=null){
+					  att_AgDoctorInfo.setDoctorId(ID);
+				  	  Object obj=this.getOne(att_AgDoctorInfo);
+					  if(obj!=null){
+							this.deleteObject(obj); 
+					  }
+			}
+	}
+
+	/**
+ 	 * 根据ag_doctor_info表主键修改AgDoctorInfo对象记录
+     * @param  DoctorId  Integer类型(ag_doctor_info表主键)
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+     * @return AgDoctorInfo  修改后的AgDoctorInfo对象记录
+	 * @throws HSKDBException
+	 */
+	public  AgDoctorInfo updateAgDoctorInfoById(Integer DoctorId,AgDoctorInfo att_AgDoctorInfo) throws HSKDBException{
+		  if(DoctorId!=null){
+					att_AgDoctorInfo.setDoctorId(DoctorId);
+				   	Object obj=	this.getOne(att_AgDoctorInfo);
+					if(obj!=null){							 
+							this.updateObject(obj);
+					}
+			}
+			return  att_AgDoctorInfo;
+	}
+	
+	/**
+	 * 新增ag_doctor_info表 记录
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+	 * @throws HSKDBException
+	 */
+	public Integer saveAgDoctorInfo(AgDoctorInfo att_AgDoctorInfo) throws HSKDBException{
+		 return this.newObject(att_AgDoctorInfo);
+	} 
+		
+	/**
+	 * 新增或修改ag_doctor_info表记录 ,如果ag_doctor_info表主键AgDoctorInfo.DoctorId为空就是添加，如果非空就是修改
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+	 * @throws HSKDBException
+	 */
+	public  AgDoctorInfo saveOrUpdateAgDoctorInfo(AgDoctorInfo att_AgDoctorInfo) throws HSKDBException{
+		  this.getHibernateTemplate().saveOrUpdate(att_AgDoctorInfo);
+		  return att_AgDoctorInfo;
+	}
+	
+	/**
+	 *根据AgDoctorInfo对象作为对(ag_doctor_info表进行查询，获取列表对象
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+     * @return List<AgDoctorInfo>  列表对象
+	 * @throws HSKDBException 
+	 */
+	 @SuppressWarnings("unchecked")
+	public List<AgDoctorInfo> getListByAgDoctorInfo(AgDoctorInfo att_AgDoctorInfo) throws HSKDBException{
+		String Hql=this.getHql( att_AgDoctorInfo); 
+		List<AgDoctorInfo> list=this.getHibernateTemplate().find(Hql);
+		this.getHibernatesession().clear();
+		return  list;
+	}
+	/**
+	 *根据AgDoctorInfo对象作为对(ag_doctor_info表进行查询，获取分页对象
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+     * @return List<AgDoctorInfo>  分页对象
+	 * @throws HSKDBException 
+	 */
+	public PagerModel getPagerModelByAgDoctorInfo(AgDoctorInfo att_AgDoctorInfo)
+			throws HSKDBException {
+		String Hql=this.getHql(att_AgDoctorInfo);
+		PagerModel pm = this.getHibernateDao().findByPage(Hql); 
+		this.getHibernatesession().clear();
+		return pm; 
+	} 
+	/**
+	 * 根据AgDoctorInfo对象获取Hql字符串
+     * @param  att_AgDoctorInfo  AgDoctorInfo类型(ag_doctor_info表记录)
+	 *  @return hql字符串
+	 */
+	private String  getHql(AgDoctorInfo att_AgDoctorInfo){
+			 StringBuffer sbuffer = new StringBuffer( " from  AgDoctorInfo  where  1=1  ");
+			 String likeStr=  att_AgDoctorInfo.getTab_like();
+			 String orderStr= att_AgDoctorInfo.getTab_order();
+			 
+			 //*****************无关字段处理begin*****************
+						   		 //处理in条件 医生ID(doctorId)
+							     if(att_AgDoctorInfo.getDoctorId_str()!=null&&
+						   		    !"".equals(att_AgDoctorInfo.getDoctorId_str().trim())){ 
+											 String  intStr=att_AgDoctorInfo.getDoctorId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  doctorId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  doctorId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 医院ID(organizationId)
+							     if(att_AgDoctorInfo.getOrganizationId_str()!=null&&
+						   		    !"".equals(att_AgDoctorInfo.getOrganizationId_str().trim())){ 
+											 String  intStr=att_AgDoctorInfo.getOrganizationId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  organizationId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  organizationId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 角色id(roleId)
+							     if(att_AgDoctorInfo.getRoleId_str()!=null&&
+						   		    !"".equals(att_AgDoctorInfo.getRoleId_str().trim())){ 
+											 String  intStr=att_AgDoctorInfo.getRoleId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  roleId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  roleId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+						   		 //处理in条件 岗位ID(jobTitleId)
+							     if(att_AgDoctorInfo.getJobTitleId_str()!=null&&
+						   		    !"".equals(att_AgDoctorInfo.getJobTitleId_str().trim())){ 
+											 String  intStr=att_AgDoctorInfo.getJobTitleId_str().trim();
+											 String[]  arrayStr=intStr.split(","); 
+											 
+											  if(arrayStr.length>0){
+												 sbuffer.append(" and ( ");
+												 for(int i=0;i<arrayStr.length;i++){
+													 String did=arrayStr[i];
+													 if(i==arrayStr.length-1){
+														 sbuffer.append("  jobTitleId="+did+"   "); 
+													 }else {
+													 sbuffer.append("  jobTitleId="+did+" or "); 
+													 }
+												 }
+												 sbuffer.append(" ) "); 
+											 }
+											   
+								 	}
+								 		//时间类型开始条件处理  创建时间(createDate)
+									  if(att_AgDoctorInfo.getCreateDate_start()!=null){
+								   	    	sbuffer.append( " and  createDate<='" +att_AgDoctorInfo.getCreateDate_start()+"'" );  
+										 }
+								 	  //时间类型结束条件处理 创建时间(createDate)
+									 	if(att_AgDoctorInfo.getCreateDate_end()!=null){
+						   	      			sbuffer.append( " and  createDate>'" +att_AgDoctorInfo.getCreateDate_end()+"'" );  
+								  	     } 
+								 		//时间类型开始条件处理  修改时间(editDate)
+									  if(att_AgDoctorInfo.getEditDate_start()!=null){
+								   	    	sbuffer.append( " and  editDate<='" +att_AgDoctorInfo.getEditDate_start()+"'" );  
+										 }
+								 	  //时间类型结束条件处理 修改时间(editDate)
+									 	if(att_AgDoctorInfo.getEditDate_end()!=null){
+						   	      			sbuffer.append( " and  editDate>'" +att_AgDoctorInfo.getEditDate_end()+"'" );  
+								  	     } 
+			 //*****************无关字段处理end*****************
+			 //*****************数据库字段处理begin*************
+								  		//医生ID(doctorId)
+					 					if(att_AgDoctorInfo.getDoctorId()!=null){
+											 sbuffer.append( " and doctorId=" +att_AgDoctorInfo.getDoctorId() );
+										 }
+								  		//医院ID(organizationId)
+					 					if(att_AgDoctorInfo.getOrganizationId()!=null){
+											 sbuffer.append( " and organizationId=" +att_AgDoctorInfo.getOrganizationId() );
+										 }
+								  		//角色id(roleId)
+					 					if(att_AgDoctorInfo.getRoleId()!=null){
+											 sbuffer.append( " and roleId=" +att_AgDoctorInfo.getRoleId() );
+										 }
+								  		//岗位ID(jobTitleId)
+					 					if(att_AgDoctorInfo.getJobTitleId()!=null){
+											 sbuffer.append( " and jobTitleId=" +att_AgDoctorInfo.getJobTitleId() );
+										 }
+					 					if(att_AgDoctorInfo.getDoctorId_no_str()!=null && !att_AgDoctorInfo.getDoctorId_no_str().trim().equals("")){
+											 sbuffer.append( " and doctorId not in ("+att_AgDoctorInfo.getDoctorId_no_str().trim()+")");
+										 }
+					       				//医生名称(name)		 					 
+									 if(att_AgDoctorInfo.getName()!=null&&
+									  !"".equals(att_AgDoctorInfo.getName().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("name")!=-1){
+											  sbuffer.append( " and name  like '%"+att_AgDoctorInfo.getName()+"%'"   );
+										  }else {
+											  sbuffer.append( " and name   ='"+att_AgDoctorInfo.getName()+"'"   );
+										  }
+									 }
+					       				//性别(gender)		 					 
+									 if(att_AgDoctorInfo.getGender()!=null&&
+									  !"".equals(att_AgDoctorInfo.getGender().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("gender")!=-1){
+											  sbuffer.append( " and gender  like '%"+att_AgDoctorInfo.getGender()+"%'"   );
+										  }else {
+											  sbuffer.append( " and gender   ='"+att_AgDoctorInfo.getGender()+"'"   );
+										  }
+									 }
+					       				//生日(birthday)		 					 
+									 if(att_AgDoctorInfo.getBirthday()!=null&&
+									  !"".equals(att_AgDoctorInfo.getBirthday().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("birthday")!=-1){
+											  sbuffer.append( " and birthday  like '%"+att_AgDoctorInfo.getBirthday()+"%'"   );
+										  }else {
+											  sbuffer.append( " and birthday   ='"+att_AgDoctorInfo.getBirthday()+"'"   );
+										  }
+									 }
+					       				//手机号(mobile)		 					 
+									 if(att_AgDoctorInfo.getMobile()!=null&&
+									  !"".equals(att_AgDoctorInfo.getMobile().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("mobile")!=-1){
+											  sbuffer.append( " and mobile  like '%"+att_AgDoctorInfo.getMobile()+"%'"   );
+										  }else {
+											  sbuffer.append( " and mobile   ='"+att_AgDoctorInfo.getMobile()+"'"   );
+										  }
+									 }
+					       				//是否专家:0是1否(expert)		 					 
+									 if(att_AgDoctorInfo.getExpert()!=null&&
+									  !"".equals(att_AgDoctorInfo.getExpert().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("expert")!=-1){
+											  sbuffer.append( " and expert  like '%"+att_AgDoctorInfo.getExpert()+"%'"   );
+										  }else {
+											  sbuffer.append( " and expert   ='"+att_AgDoctorInfo.getExpert()+"'"   );
+										  }
+									 }
+					       				//简介(introduction)		 					 
+									 if(att_AgDoctorInfo.getIntroduction()!=null&&
+									  !"".equals(att_AgDoctorInfo.getIntroduction().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("introduction")!=-1){
+											  sbuffer.append( " and introduction  like '%"+att_AgDoctorInfo.getIntroduction()+"%'"   );
+										  }else {
+											  sbuffer.append( " and introduction   ='"+att_AgDoctorInfo.getIntroduction()+"'"   );
+										  }
+									 }
+					       				//专业特长(major)		 					 
+									 if(att_AgDoctorInfo.getMajor()!=null&&
+									  !"".equals(att_AgDoctorInfo.getMajor().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("major")!=-1){
+											  sbuffer.append( " and major  like '%"+att_AgDoctorInfo.getMajor()+"%'"   );
+										  }else {
+											  sbuffer.append( " and major   ='"+att_AgDoctorInfo.getMajor()+"'"   );
+										  }
+									 }
+					       				//是否可见:0可见1不可见(visible)		 					 
+									 if(att_AgDoctorInfo.getVisible()!=null&&
+									  !"".equals(att_AgDoctorInfo.getVisible().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("visible")!=-1){
+											  sbuffer.append( " and visible  like '%"+att_AgDoctorInfo.getVisible()+"%'"   );
+										  }else {
+											  sbuffer.append( " and visible   ='"+att_AgDoctorInfo.getVisible()+"'"   );
+										  }
+									 }
+					       				//头像(avatar)		 					 
+									 if(att_AgDoctorInfo.getAvatar()!=null&&
+									  !"".equals(att_AgDoctorInfo.getAvatar().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("avatar")!=-1){
+											  sbuffer.append( " and avatar  like '%"+att_AgDoctorInfo.getAvatar()+"%'"   );
+										  }else {
+											  sbuffer.append( " and avatar   ='"+att_AgDoctorInfo.getAvatar()+"'"   );
+										  }
+									 }
+					       				//证书(images)		 					 
+									 if(att_AgDoctorInfo.getImages()!=null&&
+									  !"".equals(att_AgDoctorInfo.getImages().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("images")!=-1){
+											  sbuffer.append( " and images  like '%"+att_AgDoctorInfo.getImages()+"%'"   );
+										  }else {
+											  sbuffer.append( " and images   ='"+att_AgDoctorInfo.getImages()+"'"   );
+										  }
+									 }
+					       				//是否在职,0是，1不是(status)		 					 
+									 if(att_AgDoctorInfo.getStatus()!=null&&
+									  !"".equals(att_AgDoctorInfo.getStatus().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("status")!=-1){
+											  sbuffer.append( " and status  like '%"+att_AgDoctorInfo.getStatus()+"%'"   );
+										  }else {
+											  sbuffer.append( " and status   ='"+att_AgDoctorInfo.getStatus()+"'"   );
+										  }
+									 }
+					       				//创建人(createRen)		 					 
+									 if(att_AgDoctorInfo.getCreateRen()!=null&&
+									  !"".equals(att_AgDoctorInfo.getCreateRen().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("createRen")!=-1){
+											  sbuffer.append( " and createRen  like '%"+att_AgDoctorInfo.getCreateRen()+"%'"   );
+										  }else {
+											  sbuffer.append( " and createRen   ='"+att_AgDoctorInfo.getCreateRen()+"'"   );
+										  }
+									 }
+						   				//创建时间(createDate)
+						 				if(att_AgDoctorInfo.getCreateDate()!=null){
+						   	                   sbuffer.append( " and  createDate='" +att_AgDoctorInfo.getCreateDate()+"'" );  
+								  		}
+					       				//修改人(editRen)		 					 
+									 if(att_AgDoctorInfo.getEditRen()!=null&&
+									  !"".equals(att_AgDoctorInfo.getEditRen().trim())){
+										  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("editRen")!=-1){
+											  sbuffer.append( " and editRen  like '%"+att_AgDoctorInfo.getEditRen()+"%'"   );
+										  }else {
+											  sbuffer.append( " and editRen   ='"+att_AgDoctorInfo.getEditRen()+"'"   );
+										  }
+									 }
+						   				//修改时间(editDate)
+						 				if(att_AgDoctorInfo.getEditDate()!=null){
+						   	                   sbuffer.append( " and  editDate='" +att_AgDoctorInfo.getEditDate()+"'" );  
+								  		}
+						 				
+						 				//科室ID集合(departmentId)		 					 
+										 if(att_AgDoctorInfo.getDepartmentId()!=null&&
+										  !"".equals(att_AgDoctorInfo.getDepartmentId().trim())){
+											  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("departmentId")!=-1){
+												  sbuffer.append( " and departmentId  like '%"+att_AgDoctorInfo.getDepartmentId()+"%'"   );
+											  }else {
+												  sbuffer.append( " and departmentId   in (  "+att_AgDoctorInfo.getDepartmentId()+")"   );
+											  }
+										 }
+											//科室名称集合(departmentName)		 					 
+										 if(att_AgDoctorInfo.getDepartmentName()!=null&&
+										  !"".equals(att_AgDoctorInfo.getDepartmentName().trim())){
+											  if(likeStr!=null&&!"".equals(likeStr.trim())&&likeStr.indexOf("departmentName")!=-1){
+												  sbuffer.append( " and departmentName  like '%"+att_AgDoctorInfo.getDepartmentName()+"%'"   );
+											  }else {
+												  sbuffer.append( " and departmentName   in (  "+att_AgDoctorInfo.getDepartmentName()+")"   );
+											  }
+										 }
+						 				
+						 				
+			 //*****************数据库字段处理end***************
+			  		if(orderStr!=null&&!"".equals(orderStr.trim())){
+									 sbuffer.append( " order by "+orderStr);
+						 }
+						 /*
+						 else {
+							  sbuffer.append( " order by  DoctorId   desc " );
+					      }
+					      */
+			 
+			 return  sbuffer.toString();
+	}
+}
